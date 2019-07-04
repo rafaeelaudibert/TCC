@@ -18,7 +18,7 @@ CDATA_ITEMS = ["key", "title", "booktitle", "year", "ee"]
 
 CONFERENCES_FOLDER = './conferences/'
 CONFERENCES = [
-    {"name": "AAAI", "regex": r"^AAAI$"}, {"name": "IJCAI", "regex": r"^IJCAI( \(\d+\))*$"},
+    {"name": "AAAI", "regex": r"^((AAAI)|(AAAI\/IAAI(, Vol\. \d)?))$"}, {"name": "IJCAI", "regex": r"^IJCAI( \(\d+\))*$"},
     {"name": "CVPR", "regex": r"^CVPR( \(\d+\))*$"}, {"name": "ECCV", "regex": r"^ECCV( \(\d+\))*$"}, {"name": "ICCV", "regex": r"^ICCV$"},
     {"name": "ICML", "regex": r"^ICML( \(\d+\))*$"}, {"name": "KDD", "regex": r"^KDD$"}, {"name": "NIPS", "regex": r"^((NeurIPS)|(NIPS))$"},
     {"name": "ACL", "regex": r"^ACL( \(\d+\))*$"}, {"name": "EMNL", "regex": r"^EMNLP$"}, {"name": "NAACL", "regex": r"^((HLT\-NAACL)|(NAACL\-HLT))$"},
