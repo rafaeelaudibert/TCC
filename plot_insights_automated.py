@@ -96,7 +96,7 @@ def main():
 
             # Plotting data and saving to file
             plt.plot(X, Y_pred, color='blue', linewidth=2)
-            if plot['award_year'] is not None:
+            if plot['award_year'] is not None and str(plot['award_year']) in plot_data:
                 plt.scatter([plot['award_year']], [plot_data[str(plot['award_year'])]], c='orange', marker='*', s=500)
             plt.scatter(X, Y, color='green')
             plt.title(plot['title'])
