@@ -87,20 +87,37 @@ def main():
             # Create regression object + computing it
             X = np.array([int(x) for x in plot_data.keys()]).reshape(-1, 1)
             Y = list(plot_data.values())
-            regr = linear_model.LinearRegression()
-            regr.fit(X, Y)
-            Y_pred = regr.predict(X)
-
+   
             # Clear plot
             plt.clf()
 
-            # Plotting data and saving to file
-            plt.plot(X, Y_pred, color='blue', linewidth=2)
+            ## Plotting data and saving to file
+            # Plot linear regression line
+            try:
+                regr = linear_model.LinearRegression()
+                regr.fit(X, Y)
+                Y_pred = regr.predict(X)
+                plt.plot(X, Y_pred, color='blue', linewidth=2)
+            except ValueError as _:
+                pass
+
+            # Plot dashed line at 0.0
+            plt.plot([min(X), max(X)], [0, 0], dashes=[15, 5, 15, 5], linewidth=0.5)
+
+            # Plot start on award year
             if plot['award_year'] is not None and str(plot['award_year']) in plot_data:
                 plt.scatter([plot['award_year']], [plot_data[str(plot['award_year'])]], c='orange', marker='*', s=500)
+            
+            # Plot data
             plt.scatter(X, Y, color='green')
+            
+            # Plot title
             plt.title(plot['title'])
-            plt.ylim([0.0, 0.7])
+            
+            # Configure limit
+            plt.ylim([min(-0.1, min(Y)), max(0.8, max(Y))])
+            
+            # Save image to folder
             plt.savefig(IMAGE_FOLDER_PATH + plot['title'] + '.png')
 
             tqdm.write('Finished {}'.format(plot['title']))
