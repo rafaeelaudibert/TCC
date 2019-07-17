@@ -104,7 +104,7 @@
 * LICS - 1617 Papers
 
 ## Interdisciplinary Areas
-### Computatinoal Biology & Bioinformatics
+### Computational Biology & Bioinformatics
 * ISMB - 421 Papers
 * RECOMB/RECOMB-CG - 1057 Papers
 
