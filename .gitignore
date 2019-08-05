@@ -2,4 +2,5 @@
 *.txt
 *.marshal
 *.xml
+*.gml
 img/*
