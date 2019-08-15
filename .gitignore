@@ -3,4 +3,5 @@
 *.marshal
 *.xml
 *.gml
+*.png
 img/*
