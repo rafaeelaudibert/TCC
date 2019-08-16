@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm, trange
 import fire
 from parallel_betweenness import betweenness_centrality_parallel
+from parallel_closeness import closeness_centrality_parallel
 
 # Constants
 DATASET_SIZE = 4_107_340
@@ -189,7 +190,7 @@ def generate_graph(save_records: bool = False,
             # nx.set_node_attributes(G, bn, 'betweenness')
 
             print('Generating closeness to save year gml')
-            cn = nx.closeness_centrality(G)
+            cn = closeness_centrality_parallel(G)
             nx.set_node_attributes(G, cn, 'closeness')
 
             # Saving graph to .gml file
