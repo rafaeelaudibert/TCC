@@ -10,12 +10,23 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm, trange
 import fire
 
-DBLP_SIZE = 4_107_340
-CONFERENCE_ID = ['1184914352', '1127325140', '1203999783']
+# Constants
+DATASET_SIZE = 4_107_340
+CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
 CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
+AUTHOR_IDS = [('563069026', 'Hinton'), ('161269817', 'Bengio'),
+              ('2053214915', 'LeCun')]
 AUTHOR_COLOR = "#eb3dce"
 PAPER_COLOR = "#57def2"
-COLOR_PALETTE = ["#466365", "#B49A67", "#CEB3AB", "#C4C6E7", "#BAA5FF"]
+COLOR_PALETTE = [
+    ('#FECEE9', '#EFA0CD', '#FF66BC', '#4F032E', "#0F0008"),
+    ('#D4E4BC', '#AAB796', '#6B8E36', '#576D36', '#384722'),
+    ('#BAD3E0', '#5FA7CE', '#2DB5FF', '#0091E0', '#275B77'),
+    ('#F9EDEE', '#DBA6AB', '#E63946', '#9E454C', '#561C21'),
+]
+TURING_AWARD_YEAR = 2018
+DATASET_BASE_PATH = './dblp_arnet/'
+
 
 def get_data(dictionary):
     return {
@@ -31,11 +42,10 @@ def main(save_adj: bool = False, save_conf: bool = False, figure_save_path: str 
     conference_papers = {}
 
     # Read file adding to array
-    with open('./dblp_arnet/dblp_papers_v11.txt', 'r') as f:
-        for cnt, line in tqdm(enumerate(f), total=DBLP_SIZE):
+            for line in tqdm(f, total=DATASET_SIZE):
             parsed_json = json.loads(line)
             try:
-                if parsed_json['venue']['id'] in CONFERENCE_ID:                    
+                    if parsed_json['venue']['id'] in CONFERENCE_IDS:
                     # If doesn't have year in the dictionary
                     if parsed_json['year'] not in conference_papers:
                         conference_papers[int(parsed_json['year'])] = []
