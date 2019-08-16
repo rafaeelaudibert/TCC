@@ -1,12 +1,14 @@
+# Core imports
 import json
+import math
+from pprint import pprint as pp
+
+# Library imports
 import networkx as nx
 from networkx.readwrite import json_graph
 import matplotlib.pyplot as plt
-from pprint import pprint as pp
 from tqdm import tqdm, trange
-from pprint import pprint as pp
 import fire
-import math
 
 DBLP_SIZE = 4_107_340
 CONFERENCE_ID = ['1184914352', '1127325140', '1203999783']
