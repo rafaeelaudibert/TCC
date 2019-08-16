@@ -41,14 +41,17 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
                                     [True] * num_chunks))
 
     # Reduce the partial solutions
-    closeness_cumulator = closeness_scores[0]
-    for closeness in closeness_scores[1:]:
-        for n in closeness:
-            if n not in closeness_cumulator:
-                closeness_cumulator[n] = closeness[n]
-            else:
-                closeness_cumulator[n] += closeness[n]
-    return closeness_cumulator
+    if len(closeness_scores) > 0:
+        closeness_cumulator = closeness_scores[0]
+        for closeness in closeness_scores[1:]:
+            for n in closeness:
+                if n not in closeness_cumulator:
+                    closeness_cumulator[n] = closeness[n]
+                else:
+                    closeness_cumulator[n] += closeness[n]
+        return closeness_cumulator
+    else:
+        return {}
 
 
 def closeness_centrality(G, u=None, distance=None, wf_improved=True):

@@ -38,11 +38,14 @@ def betweenness_centrality_parallel(G, processes=None, **kwargs):
                                       node_chunks))
 
     # Reduce the partial solutions
-    betweenness_cumulator = betweenness_scores[0]
-    for betweenness in betweenness_scores[1:]:
-        for n in betweenness:
-            betweenness_cumulator[n] += betweenness[n]
-    return betweenness_cumulator
+    if len(betweenness_scores) > 0:
+        betweenness_cumulator = betweenness_scores[0]
+        for betweenness in betweenness_scores[1:]:
+            for n in betweenness:
+                betweenness_cumulator[n] += betweenness[n]
+        return betweenness_cumulator
+    else:
+        return {}
 
 
 if __name__ == "__main__":
