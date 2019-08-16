@@ -1,4 +1,5 @@
-import sys, marshal
+import sys
+import marshal
 import json
 import fire
 import re
@@ -9,10 +10,12 @@ PATH_TO_XML = "./dblp.xml"
 PATH_TO_MARSHAL = "./dblp.marshal"
 DBLP_SIZE = 6_963_277
 CATEGORIES = set(
-	["article", "inproceedings", "proceedings", "book", "incollection", "phdthesis", "mastersthesis", "www"]
+    ["article", "inproceedings", "proceedings", "book",
+        "incollection", "phdthesis", "mastersthesis", "www"]
 )
 DATA_ITEMS = ["title", "booktitle", "journal", "volume", "year", "ee"]
-TDATA_ITEMS = ["key", "tag", "title", "booktitle", "journal", "volume", "year", "ee"]
+TDATA_ITEMS = ["key", "tag", "title", "booktitle",
+               "journal", "volume", "year", "ee"]
 JDATA_ITEMS = ["key", "title", "journal", "volume", "year", "ee"]
 CDATA_ITEMS = ["key", "title", "booktitle", "year", "ee"]
 
@@ -44,6 +47,8 @@ AUTHORS = [
 ]
 
 # Return the authors
+
+
 def get_authors(value):
 
     # Only one author case
@@ -58,11 +63,12 @@ def get_authors(value):
                 text.append(author)
             else:
                 text.append(author['#text'])
-        
-        return ', '.join(text)    
+
+        return ', '.join(text)
 
     # Only one dict case
     return value['author']['#text']
+
 
 def main(min_year=float("-inf"), max_year=float("inf")):
     output = []
@@ -70,7 +76,7 @@ def main(min_year=float("-inf"), max_year=float("inf")):
     pbar_out = tqdm(unit=' entries', unit_scale=True, total=DBLP_SIZE)
     pbar_in = tqdm(unit=' articles', unit_scale=True)
     count = 0
-    
+
     try:
         with open(PATH_TO_MARSHAL, 'rb') as f:
             while True:
@@ -79,15 +85,15 @@ def main(min_year=float("-inf"), max_year=float("inf")):
 
                     # Check if we should insert this
                     if info[1][0] == 'inproceedings' and \
-                        float(value['year']) >= min_year and \
-                        float(value['year']) <= max_year:
+                            float(value['year']) >= min_year and \
+                            float(value['year']) <= max_year:
 
                         # Check, for each author, if it should be added
                         for author in authors_dict.keys():
                             if re.compile(author).search(get_authors(value)):
                                 authors_dict[author].append(value)
                                 tqdm.write("[INFO] Added to {}".format(author))
-                        
+
                         pbar_in.update(1)
                 except KeyError as e:
                     pass
@@ -100,10 +106,11 @@ def main(min_year=float("-inf"), max_year=float("inf")):
         pbar_in.close()
 
     for author in authors_dict.keys():
-        with open(AUTHORS_FOLDER + '_'.join(author.replace('.', '').split(' ')) + '.json', 'w') as f:
+        with open(AUTHORS_FOLDER + '_'.join(author.replace('.', '').split(' ')) + '.json', 'w') as f:   # nopep8
             json.dump(authors_dict[author], f, indent=2)
 
     print("Final count", count)
+
 
 # Calling main with fire
 if __name__ == "__main__":

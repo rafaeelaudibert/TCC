@@ -1,4 +1,5 @@
-import sys, marshal
+import sys
+import marshal
 import json
 import fire
 import re
@@ -9,18 +10,28 @@ PATH_TO_XML = "./dblp.xml"
 PATH_TO_MARSHAL = "./dblp.marshal"
 DBLP_SIZE = 13_871_537
 CATEGORIES = set(
-	["article", "inproceedings", "proceedings", "book", "incollection", "phdthesis", "mastersthesis", "www"]
+    ["article", "inproceedings", "proceedings", "book",
+        "incollection", "phdthesis", "mastersthesis", "www"]
 )
 DATA_ITEMS = ["title", "booktitle", "journal", "volume", "year", "ee"]
-TDATA_ITEMS = ["key", "tag", "title", "booktitle", "journal", "volume", "year", "ee"]
+TDATA_ITEMS = ["key", "tag", "title", "booktitle",
+               "journal", "volume", "year", "ee"]
 JDATA_ITEMS = ["key", "title", "journal", "volume", "year", "ee"]
 CDATA_ITEMS = ["key", "title", "booktitle", "year", "ee"]
 
 # Return the authors
-def get_authors(value):
-    return value['author'] if type(value['author']) is str else ', '.join(author if type(author) is str else author['#text'] for author in value['author'])
 
-def main(min_year=float("-inf"), max_year=float("inf"), output_filename="dblp.json", conference_name=None, author_name=None):
+
+def get_authors(value):
+    return value['author'] if type(value['author']) is str else ', '.join(author if type(author) is str else author['#text'] for author in value['author'])   # nopep8
+
+
+def main(min_year=float("-inf"),
+         max_year=float("inf"),
+         output_filename="dblp.json",
+         conference_name=None,
+         author_name=None):
+
     output = []
     pbar_out = tqdm(unit=' entries', unit_scale=True, total=DBLP_SIZE)
     pbar_in = tqdm(unit=' articles', unit_scale=True)
@@ -31,7 +42,7 @@ def main(min_year=float("-inf"), max_year=float("inf"), output_filename="dblp.js
 
     if author_name is not None:
         author_regex = re.compile(author_name)
-    
+
     try:
         with open(PATH_TO_MARSHAL, 'rb') as f:
             while True:
@@ -42,7 +53,7 @@ def main(min_year=float("-inf"), max_year=float("inf"), output_filename="dblp.js
                         float(value['year']) >= min_year and \
                         float(value['year']) <= max_year and \
                         (conference_name is None or conference_regex.match(value['booktitle'])) and \
-                        (author_name is None or author_regex.match(get_authors(value))):
+                            (author_name is None or author_regex.match(get_authors(value))):   # nopep8
 
                         output.append(value)
                         pbar_in.update(1)
@@ -60,6 +71,7 @@ def main(min_year=float("-inf"), max_year=float("inf"), output_filename="dblp.js
         json.dump(output, f, indent=2)
 
     print("Final count", count)
+
 
 # Calling main with fire
 if __name__ == "__main__":
