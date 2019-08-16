@@ -29,12 +29,15 @@ DATASET_BASE_PATH = './dblp_arnet/'
 
 
 def get_data(dictionary):
+    '''
+        Given a dictionary, parse the necessary data contained in it
+    '''
     return {
-        'id': dictionary['id'] if 'id' in dictionary else 0,
-        'title': dictionary['title'] if 'title' in dictionary else '',
-        'year': dictionary['year'] if 'year' in dictionary else 0,
-        'authors': dictionary['authors'] if 'authors' in dictionary else [],
-        'references': dictionary['references'] if 'references' in dictionary else []
+        'id': dictionary.get('id', 0),
+        'title': dictionary.get('title', ''),
+        'year': int(dictionary.get('year', 0)),
+        'authors': dictionary.get('authors', []),
+        'references': dictionary.get('references', []),
     }
 
 def main(save_adj: bool = False, save_conf: bool = False, figure_save_path: str = "graph.svg", save_gml: bool = False, plot_to_files: bool = False):
