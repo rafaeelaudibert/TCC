@@ -9,6 +9,7 @@ from networkx.readwrite import json_graph
 import matplotlib.pyplot as plt
 from tqdm import tqdm, trange
 import fire
+from parallel_betweenness import betweenness_centrality_parallel
 
 # Constants
 DATASET_SIZE = 4_107_340
@@ -184,7 +185,7 @@ def generate_graph(save_records: bool = False,
 
             # Computing betweeness
             # print('Generating betweenness to save year gml')
-            # bn = nx.betweenness_centrality(G, normalized=True)
+            # bn = betweenness_centrality_parallel(G)
             # nx.set_node_attributes(G, bn, 'betweenness')
 
             print('Generating closeness to save year gml')
