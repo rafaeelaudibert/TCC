@@ -40,6 +40,8 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
                                     [None] * num_chunks,
                                     [True] * num_chunks))
 
+    pool.close()  # Remember to close the process pool
+
     # Reduce the partial solutions
     if len(closeness_scores) > 0:
         closeness_cumulator = closeness_scores[0]

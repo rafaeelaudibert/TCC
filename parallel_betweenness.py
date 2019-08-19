@@ -37,6 +37,8 @@ def betweenness_centrality_parallel(G, processes=None, **kwargs):
                                       [None] * num_chunks,
                                       node_chunks))
 
+    pool.close()  # Remember to close the process pool
+
     # Reduce the partial solutions
     if len(betweenness_scores) > 0:
         betweenness_cumulator = betweenness_scores[0]
