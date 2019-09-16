@@ -25,23 +25,32 @@ def _betmap(G):
     python 3 compatibility, and then unpack it when we send it to
     `betweenness_centrality_source`
     """
-    return closeness_centrality(*G)
+    print("Starting chunk {}/{}".format(G[-1][0], G[-1][1]))
+    centrality = closeness_centrality(*G[:-1])
+    print("Finished chunk {}/{}".format(G[-1][0], G[-1][1]))
+
+    return centrality
 
 
 def closeness_centrality_parallel(G, processes=None, **kwargs):
-    """Parallel closeness centrality  function"""
+    """Parallel closeness centrality function"""
     pool = Pool(processes=processes)
     node_divisor = len(pool._pool) * 4
     node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
+    print("Starting to compute closeness in {} chunks".format(num_chunks))
+    graphs = [G] * num_chunks
     closeness_scores = pool.map(_betmap,
-                                zip([G] * num_chunks,
+                                zip(graphs,
                                     node_chunks,
                                     [None] * num_chunks,
-                                    [True] * num_chunks))
-
+                                    [True] * num_chunks,
+                                    [(x + 1, num_chunks) for x in range(num_chunks)])
+                                )
+    print("Finished computing closeness")
     pool.close()  # Remember to close the process pool
 
+    print("Merging closeness values")
     # Reduce the partial solutions
     if len(closeness_scores) > 0:
         closeness_cumulator = closeness_scores[0]
@@ -51,8 +60,10 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
                     closeness_cumulator[n] = closeness[n]
                 else:
                     closeness_cumulator[n] += closeness[n]
+        print("Finished merging")
         return closeness_cumulator
     else:
+        print("No closeness to merge")
         return {}
 
 
