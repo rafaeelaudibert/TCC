@@ -31,6 +31,7 @@ COLOR_PALETTE = [
 ]
 TURING_AWARD_YEAR = 2018
 DATASET_BASE_PATH = './dblp_arnet/'
+GML_BASE_PATH = './GML/'
 
 
 def get_data(dictionary):
@@ -145,7 +146,7 @@ def generate_graph(save_records: bool = False,
             print("Current Graph size: {} nodes and {} edges".format(
                 G.number_of_nodes(), G.number_of_edges()))
         else:
-            gml_filename = DATASET_BASE_PATH + \
+            gml_filename = GML_BASE_PATH + \
                 '{}_{}_{}'.format(CONFERENCE_NAME, year, graph_file)
             print("Reading graph from GML file {}".format(gml_filename))
             try:
@@ -194,7 +195,7 @@ def generate_graph(save_records: bool = False,
             nx.set_node_attributes(G, cn, 'closeness')
 
             # Saving graph to .gml file
-            gml_filename = DATASET_BASE_PATH + \
+            gml_filename = GML_BASE_PATH + \
                 '{}_{}_{}'.format(CONFERENCE_NAME, year, graph_file)
             nx.write_gml(G, gml_filename)
             print("Saved graph to .gml file")
@@ -265,13 +266,13 @@ def generate_graph(save_records: bool = False,
 
     # Save graph to .gml
     if save_gml:
-        nx.write_gml(G, DATASET_BASE_PATH +
+        nx.write_gml(G, GML_BASE_PATH +
                      '{}_{}'.format(CONFERENCE_NAME, graph_file))
         print("Saved graph to .gml file")
 
     # Write json data to file
     if save_records:
-        with open('./dblp_arnet/{}.json'.format(CONFERENCE_NAME), 'w') as f:
+        with open('./{}/{}.json'.format(DATASET_BASE_PATH, CONFERENCE_NAME), 'w') as f:
             json.dump(conference_papers, f)
         print("Saved conference json")
 
