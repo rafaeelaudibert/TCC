@@ -182,7 +182,7 @@ def generate_graph(save_records: bool = False,
             # nx.set_node_attributes(G, i_dg, 'indegree')
             # o_dg = {node: degree for node, degree in list(G.out_degree)}
             # nx.set_node_attributes(G, o_dg, 'outdegree')
-            dg = dg = {node: degree for node, degree in list(G.degree)}
+            dg = {node: degree for node, degree in list(G.degree)}
             nx.set_node_attributes(G, dg, 'degree')
 
             # Computing betweeness
@@ -217,42 +217,42 @@ def generate_graph(save_records: bool = False,
                     old_plots[author_name]['pr'].append(pr[author_id])
                     old_plots[author_name]['cn'].append(cn[author_id])
 
-                    # Plot new
+            # Plot new
                     print("Plotting to chart on year {}".format(year))
-                    # ax1.plot(old_plots[author_name]['year'],
-                    #          old_plots[author_name]['i_dg'],
-                    #          label=author_name,
-                    #          color=COLOR_PALETTE[author_idx][0])
-                    # ax2.plot(old_plots[author_name]['year'],
-                    #          old_plots[author_name]['o_dg'],
-                    #          label=author_name,
-                    #          color=COLOR_PALETTE[author_idx][1])
-                    # ax3.plot(old_plots[author_name]['year'],
-                    #          old_plots[author_name]['bn'],
-                    #          label=author_name,
-                    #          color=COLOR_PALETTE[author_idx][2])
-                    ax1.plot(old_plots[author_name]['year'],
-                             old_plots[author_name]['dg'],
-                             label=author_name,
-                             color=COLOR_PALETTE[author_idx][0])
-                    ax2.plot(old_plots[author_name]['year'],
-                             old_plots[author_name]['pr'],
-                             label=author_name,
-                             color=COLOR_PALETTE[author_idx][1])
-                    ax3.plot(old_plots[author_name]['year'],
-                             old_plots[author_name]['cn'],
-                             label=author_name,
-                             color=COLOR_PALETTE[author_idx][2])
+            # ax1.plot(old_plots[author_name]['year'],
+            #          old_plots[author_name]['i_dg'],
+            #          label=author_name,
+            #          color=COLOR_PALETTE[author_idx][0])
+            # ax2.plot(old_plots[author_name]['year'],
+            #          old_plots[author_name]['o_dg'],
+            #          label=author_name,
+            #          color=COLOR_PALETTE[author_idx][1])
+            # ax3.plot(old_plots[author_name]['year'],
+            #          old_plots[author_name]['bn'],
+            #          label=author_name,
+            #          color=COLOR_PALETTE[author_idx][2])
+            ax1.plot(old_plots[author_name]['year'],
+                     old_plots[author_name]['dg'],
+                     label=author_name,
+                     color=COLOR_PALETTE[author_idx][0])
+            ax2.plot(old_plots[author_name]['year'],
+                     old_plots[author_name]['pr'],
+                     label=author_name,
+                     color=COLOR_PALETTE[author_idx][1])
+            ax3.plot(old_plots[author_name]['year'],
+                     old_plots[author_name]['cn'],
+                     label=author_name,
+                     color=COLOR_PALETTE[author_idx][2])
 
-                    # Plot vertical line on year
-                    if int(year) >= TURING_AWARD_YEAR:
-                        for ax in [ax1, ax2, ax3]:
-                            ax.axvline(x=TURING_AWARD_YEAR)
+            # Plot vertical line on year
+            if int(year) >= TURING_AWARD_YEAR:
+                for ax in [ax1, ax2, ax3]:
+                    ax.axvline(x=TURING_AWARD_YEAR)
 
-                    # Plot legend in each chart
-                    for ax in [ax1, ax2, ax3]:
-                        ax.legend()
-                    plt.pause(0.001)
+            # Plot legend in each chart
+            for ax in [ax1, ax2, ax3]:
+                ax.legend()
+            plt.pause(0.001)
 
     if generate_graph and read_from_dblp:
         print("Finished creating the graph")
