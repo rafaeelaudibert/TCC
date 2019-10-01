@@ -1,6 +1,7 @@
 # Core imports
 import json
 import math
+import itertools
 from pprint import pprint as pp
 
 # Library imports
@@ -51,6 +52,7 @@ def generate_graph(save_records: bool = False,
                    save_gml: bool = False,
                    save_yearly_gml: bool = False,
                    plot_graph_figure: bool = False,
+                   plot_stats: bool = False,
                    read_from_dblp: bool = False,
                    generate_graph: bool = False,
                    figure_save_path: str = "graph.svg",
@@ -70,6 +72,9 @@ def generate_graph(save_records: bool = False,
 
         `plot_graph_figure`: Tries to apply a spring layout to the graph and
                              print it. Use it carefully
+
+        `plot_stats`: Computes some stats about the graph it, and plot it
+                      as a line chart
 
         `read_from_dblp`: Read the graph from the dblp json file.
                           If false, reads the GML from `graph_file`
@@ -105,18 +110,31 @@ def generate_graph(save_records: bool = False,
                 except KeyError as e:
                     pass
 
-    plt.ion()
-    plt.figure(figsize=(30, 24))
-    ax1 = plt.subplot(311)
-    ax1.set_title('Degree (Citations)')
-    ax2 = plt.subplot(312)
-    ax2.set_title('PageRank')
-    ax3 = plt.subplot(313)
-    ax3.set_title('Closeness')
-    old_plots = {name: {'year': [], 'dg': [], 'cn': [], 'pr': []}
-                 for id, name in AUTHOR_IDS}
+    # Configure plots
+    if plot_stats:
+        plt.ion()
+        plt.figure(figsize=(30, 24))
+
+        # Configure axis
+        axs = [plt.subplot(311), plt.subplot(312), plt.subplot(313)]
+        titles = ['Degree (Citations)', 'PageRank', 'Closeness']
+        for ax, title in zip(axs, titles):
+            ax.set_title(title)
+
+        # Configure old plots array
+        old_plots = {name: {'year': [],
+                            'degree': [],
+                            'indegree': [],
+                            'outdegree': [],
+                            'closeness': [],
+                            'betweenness': [],
+                            'pagerank': []}
+                     for id, name in AUTHOR_IDS}
+
+    # Store older_papers in a dict
     older_papers = {}
 
+    # Iterate through all the dataset years
     for year in range(1890, 2020):
 
         if generate_graph and read_from_dblp:
@@ -171,28 +189,35 @@ def generate_graph(save_records: bool = False,
             print("Saved figure for year {}".format(str(year)))
 
         if save_yearly_gml and G.number_of_nodes() > 0:
+
+            # Store graph data to plot later
+            graph_data = {}
+
             # Computing PageRank
             print('Generating PageRank to save year gml')
-            pr = nx.pagerank(G)
-            nx.set_node_attributes(G, pr, 'pagerank')
+            graph_data['pagerank'] = nx.pagerank(G)
+            nx.set_node_attributes(G, graph_data['pagerank'], 'pagerank')
 
             # Counting node degrees
             print('Generating Degrees count to save year gml')
-            # i_dg = {node: degree for node, degree in list(G.in_degree)}
-            # nx.set_node_attributes(G, i_dg, 'indegree')
-            # o_dg = {node: degree for node, degree in list(G.out_degree)}
-            # nx.set_node_attributes(G, o_dg, 'outdegree')
-            dg = {node: degree for node, degree in list(G.degree)}
-            nx.set_node_attributes(G, dg, 'degree')
+            graph_data['indegree'] = {
+                node: degree for node, degree in list(G.in_degree)}
+            nx.set_node_attributes(G, graph_data['indegree'], 'indegree')
+            graph_data['outdegree'] = {
+                node: degree for node, degree in list(G.out_degree)}
+            nx.set_node_attributes(G, graph_data['outdegree'], 'outdegree')
+            graph_data['degree'] = {
+                node: degree for node, degree in list(G.degree)}
+            nx.set_node_attributes(G, graph_data['degree'], 'degree')
 
             # Computing betweeness
             # print('Generating betweenness to save year gml')
-            # bn = betweenness_centrality_parallel(G)
-            # nx.set_node_attributes(G, bn, 'betweenness')
+            # graph_data['betweenness'] = betweenness_centrality_parallel(G)
+            # nx.set_node_attributes(G, graph_data['betweenness'], 'betweenness')
 
             print('Generating closeness to save year gml')
-            cn = closeness_centrality_parallel(G)
-            nx.set_node_attributes(G, cn, 'closeness')
+            graph_data['closeness'] = closeness_centrality_parallel(G)
+            nx.set_node_attributes(G, graph_data['closeness'], 'closeness')
 
             # Saving graph to .gml file
             gml_filename = GML_BASE_PATH + \
@@ -200,59 +225,40 @@ def generate_graph(save_records: bool = False,
             nx.write_gml(G, gml_filename)
             print("Saved graph to .gml file")
 
-            # Remove old lines from interactive plot
-            for ax in [ax1, ax2, ax3]:
-                for l in ax.get_lines():
-                    l.remove()
+            # Plot statistics in the interactive plot
+            if plot_stats:
 
-            # Plot PR
-            for author_idx, (author_id, author_name) in enumerate(AUTHOR_IDS):
-                if author_id in dg:
-                    # Append to data
-                    old_plots[author_name]['year'].append(year)
-                    # old_plots[author_name]['i_dg'].append(i_dg[author_id])
-                    # old_plots[author_name]['o_dg'].append(o_dg[author_id])
-                    # old_plots[author_name]['bn'].append(bn[author_id])
-                    old_plots[author_name]['dg'].append(dg[author_id])
-                    old_plots[author_name]['pr'].append(pr[author_id])
-                    old_plots[author_name]['cn'].append(cn[author_id])
+                # Remove old lines from interactive plot
+                for ax in axs:
+                    for l in ax.get_lines():
+                        l.remove()
 
-            # Plot new
-                    print("Plotting to chart on year {}".format(year))
-            # ax1.plot(old_plots[author_name]['year'],
-            #          old_plots[author_name]['i_dg'],
-            #          label=author_name,
-            #          color=COLOR_PALETTE[author_idx][0])
-            # ax2.plot(old_plots[author_name]['year'],
-            #          old_plots[author_name]['o_dg'],
-            #          label=author_name,
-            #          color=COLOR_PALETTE[author_idx][1])
-            # ax3.plot(old_plots[author_name]['year'],
-            #          old_plots[author_name]['bn'],
-            #          label=author_name,
-            #          color=COLOR_PALETTE[author_idx][2])
-            ax1.plot(old_plots[author_name]['year'],
-                     old_plots[author_name]['dg'],
-                     label=author_name,
-                     color=COLOR_PALETTE[author_idx][0])
-            ax2.plot(old_plots[author_name]['year'],
-                     old_plots[author_name]['pr'],
-                     label=author_name,
-                     color=COLOR_PALETTE[author_idx][1])
-            ax3.plot(old_plots[author_name]['year'],
-                     old_plots[author_name]['cn'],
-                     label=author_name,
-                     color=COLOR_PALETTE[author_idx][2])
+                # Add data to the plot
+                for auth_idx, (auth_id, auth_name) in enumerate(AUTHOR_IDS):
+                    if auth_id in graph_data['degree']:
+                        old_plots[auth_name]['year'].append(year)
 
-            # Plot vertical line on year
-            if int(year) >= TURING_AWARD_YEAR:
-                for ax in [ax1, ax2, ax3]:
-                    ax.axvline(x=TURING_AWARD_YEAR)
+                        # Append computed data and plot the chart
+                        print("Plotting to chart on year {}".format(year))
+                        for idx, (key, ax) in enumerate(zip(G.node[next(iter(G.nodes()))].keys(), itertools.cycle(axs))):
+                            old_plots[auth_name][key].append(graph_data[key])
 
-            # Plot legend in each chart
-            for ax in [ax1, ax2, ax3]:
-                ax.legend()
-            plt.pause(0.001)
+                            ax.plot(old_plots[auth_name]['year'],
+                                    old_plots[auth_name][key],
+                                    label=auth_name,
+                                    color=COLOR_PALETTE[auth_idx][idx])
+
+                # Plot vertical line on year
+                if int(year) >= TURING_AWARD_YEAR:
+                    for ax in axs:
+                        ax.axvline(x=TURING_AWARD_YEAR)
+
+                # Plot legend in each chart
+                for ax in axs:
+                    ax.legend()
+
+                # Pause to be able to draw it effectively
+                plt.pause(0.001)
 
     if generate_graph and read_from_dblp:
         print("Finished creating the graph")
@@ -260,9 +266,10 @@ def generate_graph(save_records: bool = False,
             G.number_of_nodes(), G.number_of_edges()))
 
     # Turn interactive plot off
-    plt.ioff()
-    plt.savefig(plot_save_path)
-    plt.pause(5)
+    if plot_stats:
+        plt.ioff()
+        plt.savefig(plot_save_path)
+        plt.pause(5)
 
     # Save graph to .gml
     if save_gml:
