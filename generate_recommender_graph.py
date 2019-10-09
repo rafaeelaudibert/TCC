@@ -66,11 +66,14 @@ def generate_graph(save_gml: bool = False,
                    save_yearly_gml: bool = False,
                    plot_graph_figure: bool = False,
                    read_from_dblp: bool = False,
+                   save_from_dblp: bool = False,
                    generate_graph: bool = False,
-                   figure_save_path: str = "recommender_graph.svg",
-                   plot_save_path: str = 'recommender_plot.png',
-                   graph_file: str = 'recommender_graph.gml',
-                   dblp_filename: str = 'dblp_papers_v11.txt'):
+                   parse_bag_of_words: bool = False,
+                   figure_save_path: str = "graph.svg",
+                   plot_save_path: str = 'plot.png',
+                   graph_file: str = 'graph.gml',
+                   dblp_filename: str = 'dblp_papers_v11.txt',
+                   papers_filename: str = 'papers.json'):
     '''Function to generate the recommender systems graph
 
         Arguments:
@@ -102,7 +105,7 @@ def generate_graph(save_gml: bool = False,
 
     G = nx.DiGraph()
     conference_papers = {}
-    indexed_words = set()  # Every word in the abstracts
+    indexed_words = {}  # Every word in the abstracts
 
     # Read file adding to array
     if read_from_dblp:
@@ -121,32 +124,49 @@ def generate_graph(save_gml: bool = False,
                             conference_papers[parsed_paper['year']].append(
                                 get_data(parsed_paper))
 
-                            # Build abstract string
-                            abstract = ['' for x in range(
-                                indexed_abstract["IndexLength"])]
-                            for word, arr in indexed_abstract['InvertedIndex'].items():
-                                for idx in arr:
-                                    abstract[idx] = word
-                            print(' '.join(abstract), end='\n\n\n\n')
-                            tokenized_abstract = nltk.word_tokenize(
-                                ' '.join(abstract))
+                            if parse_bag_of_words:
+                                # Build abstract string
+                                abstract = ['' for x in range(
+                                    indexed_abstract["IndexLength"])]
+                                for word, arr in indexed_abstract['InvertedIndex'].items():
+                                    for idx in arr:
+                                        abstract[idx] = word
+                                tokenized_abstract = nltk.word_tokenize(
+                                    ' '.join(abstract))
 
-                            # Remove unwanted characters
-                            regex_str = r"['0-9\-\.\,\\\/\]\+\*\^\_\=\:\~\|\!\"\(\)\[\]\<\>\#\?\u2017\u000f\u2014\u2212\u21d2\u2208\u2264\u2032]"
-                            tkn_abstract = [re.sub(regex_str, r' ', unidecode(tkn)) for tkn in tokenized_abstract if 'github' in tkn or not re.fullmatch(
-                                '[{}]+'.format(string.punctuation), tkn)]
-                            tkn_abstract = ' '.join(tkn_abstract).split(' ')
-                            for abstract_word in tkn_abstract:
-                                if len(abstract_word) > 0 and abstract_word.lower() not in STOP_WORDS:
-                                    indexed_words.add(abstract_word.lower())
+                                # Remove unwanted characters
+                                regex_str = r"['0-9\-\.\,\\\/\]\+\*\^\_\=\:\~\|\!\"\(\)\[\]\<\>\#\?\u2017\u000f\u2014\u2212\u21d2\u2208\u2264\u2032]"
+                                tkn_abstract = [re.sub(regex_str, r' ', unidecode(tkn)) for tkn in tokenized_abstract if 'github' in tkn or not re.fullmatch(
+                                    '[{}]+'.format(string.punctuation), tkn)]
+                                tkn_abstract = ' '.join(
+                                    tkn_abstract).split(' ')
+                                for abstract_word in tkn_abstract:
+                                    if len(abstract_word) > 0 and abstract_word.lower() not in STOP_WORDS:
+                                        indexed_words[abstract_word.lower()] = indexed_words.get(
+                                            abstract_word.lower(), 0) + 1
                 except KeyError as e:
                     pass
+        if save_from_dblp:
+            with open('./dblp_arnet/{}'.format(papers_filename), 'w') as f:
+                json.dump(conference_papers, f)
+    else:
+        with open('./dblp_arnet/{}'.format(papers_filename), 'r') as f:
+            conference_papers = json.load(f)
 
-    with open('indexed_words.json', 'w') as f:
-        json.dump(sorted(list(indexed_words)), f)
+    # Bag of words
+    if parse_bag_of_words:
+        indexed_words_set = set()
+        for word, count in indexed_words.items():
+            if not count < FREQUENCY_OFFSET:
+                indexed_words_set.add(word)
 
-    print(len(indexed_words))
-    exit()
+        with open('indexed_words.json', 'w') as f:
+            json.dump(sorted(list(indexed_words_set)), f)
+    else:
+        indexed_words_set = None
+        with open('indexed_words.json', 'r') as f:
+            indexed_words = json.load(f)
+            indexed_words_set = set(indexed_words)
 
     # Store older_papers in a dict
     older_papers = {}
@@ -173,7 +193,10 @@ def generate_graph(save_gml: bool = False,
                 for author in paper['authors']:
                     G.add_node(author['id'], name=author.get(
                         'name', ''), type=AUTHOR_NODE)
-                    G.add_edge(author['id'], paper['id'], type=AUTHORSHIP_EDGE)
+
+                    if paper['id'] in older_papers:
+                        G.add_edge(author['id'], paper['id'],
+                                   type=AUTHORSHIP_EDGE)
 
                 # Adiciona arestas de citação
                 for citation_id in paper['references']:
@@ -187,7 +210,8 @@ def generate_graph(save_gml: bool = False,
                 G.number_of_nodes(), G.number_of_edges()))
         else:
             gml_filename = GML_BASE_PATH + \
-                '{}_{}_{}'.format(CONFERENCE_NAME, year, graph_file)
+                '{}_{}_recommender_{}'.format(
+                    CONFERENCE_NAME, year, graph_file)
             print("Reading graph from GML file {}".format(gml_filename))
             try:
                 G = nx.read_gml(gml_filename)
@@ -213,7 +237,8 @@ def generate_graph(save_gml: bool = False,
         if save_yearly_gml and G.number_of_nodes() > 0:
             # Saving graph to .gml file
             gml_filename = GML_BASE_PATH + \
-                '{}_{}_{}'.format(CONFERENCE_NAME, year, graph_file)
+                '{}_{}_recommender_{}'.format(
+                    CONFERENCE_NAME, year, graph_file)
             nx.write_gml(G, gml_filename)
             print("Saved graph to .gml file")
 
@@ -225,7 +250,7 @@ def generate_graph(save_gml: bool = False,
     # Save graph to .gml
     if save_gml:
         nx.write_gml(G, GML_BASE_PATH +
-                     '{}_{}'.format(CONFERENCE_NAME, graph_file))
+                     '{}_recommender_{}'.format(CONFERENCE_NAME, graph_file))
         print("Saved graph to .gml file")
 
 
