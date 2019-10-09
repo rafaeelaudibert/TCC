@@ -37,10 +37,6 @@ GML_BASE_PATH = './GML/'
 
 FREQUENCY_OFFSET = 10
 
-# Configure nltk downloaders
-nltk.download('stopwords')
-nltk.download('punkt')
-
 # Fetch stopwords, or download them if it is not downloaded yet
 STOP_WORDS = set(stopwords.words('english'))
 
@@ -255,4 +251,8 @@ def generate_graph(save_gml: bool = False,
 
 
 if __name__ == "__main__":
+    # Configure nltk downloaders
+    nltk.download('stopwords', quiet=True)
+    nltk.download('punkt', quiet=True)
+
     fire.Fire(generate_graph)
