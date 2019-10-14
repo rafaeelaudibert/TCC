@@ -99,7 +99,7 @@ class AuthorPaperGraph(GenerateGraph):
                 self.G = self.read_from_gml(year)
 
             # Saving graph to .gml file
-            if should_save_yearly_gml and G.number_of_nodes() > 0:
+            if should_save_yearly_gml and self.G.number_of_nodes() > 0:
                 super().save_yearly_gml(year)
 
         if should_generate_graph and should_read_from_dblp:
