@@ -15,7 +15,7 @@ CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
 GRAPH_TYPE = 'authors_citation'
 
 
-class CitationGraph(GenerateGraph):
+class AuthorsCitationGraph(GenerateGraph):
 
     def generate(self,
                  should_save_gml: bool = True,
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # Configure to current directory
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    graphGeneration = CitationGraph(
+    graphGeneration = AuthorsCitationGraph(
         graph_name=GRAPH_TYPE,
         conference_name=CONFERENCE_NAME,
         conference_ids=CONFERENCE_IDS)
