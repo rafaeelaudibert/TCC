@@ -17,6 +17,12 @@ GRAPH_TYPE = 'citation'
 
 class CitationGraph(GenerateGraph):
 
+    def __init__(self, *args, **kwargs):
+        # Configure to current directory
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+        super().__init__(*args, **kwargs)
+
     def generate(self,
                  should_save_gml: bool = True,
                  should_save_yearly_gml: bool = False,
@@ -89,9 +95,6 @@ class CitationGraph(GenerateGraph):
 
 
 if __name__ == "__main__":
-    # Configure to current directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     graphGeneration = CitationGraph(
         graph_name=GRAPH_TYPE,
         conference_name=CONFERENCE_NAME,

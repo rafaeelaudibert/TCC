@@ -1,8 +1,14 @@
 # Imports
-from typing import List
 import json
+from typing import List
+
+import fire
 import networkx as nx
 from tqdm import tqdm, trange
+
+# Generic constants
+CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
+CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
 
 
 class GenerateGraph:
@@ -118,6 +124,54 @@ class GenerateGraph:
             print("Generating empty graph, as there is no file")
 
 
+def generate_graph(run_authors_and_papers_graph: bool = False,
+                   run_collaboration_graph: bool = False,
+                   run_citation_graph: bool = False,
+                   run_authors_citation_graph: bool = False,
+                   **kwargs: dict) -> None:
+    """
+        Run the required authors generation
+    """
+    if run_authors_and_papers_graph:
+        from generate_authors_and_papers_graph import AuthorPaperGraph  # nopep8
+        graphGeneration = AuthorPaperGraph(
+            graph_name='author_paper',
+            conference_name=CONFERENCE_NAME,
+            conference_ids=CONFERENCE_IDS)
+
+        print("Starting AuthorPaperGraph generation")
+        graphGeneration.generate(**kwargs)
+
+    if run_collaboration_graph:
+        from generate_collaboration_graph import CollaborationGraph
+        graphGeneration = CollaborationGraph(
+            graph_name='collaboration',
+            conference_name=CONFERENCE_NAME,
+            conference_ids=CONFERENCE_IDS)
+
+        print("Starting CollaborationGraph generation")
+        graphGeneration.generate(**kwargs)
+
+    if run_citation_graph:
+        from generate_citation_graph import CitationGraph
+        graphGeneration = CitationGraph(
+            graph_name='citation',
+            conference_name=CONFERENCE_NAME,
+            conference_ids=CONFERENCE_IDS)
+
+        print("Starting CitationGraph generation")
+        graphGeneration.generate(**kwargs)
+
+    if run_authors_citation_graph:
+        from generate_authors_citation_graph import AuthorsCitationGraph
+        graphGeneration = AuthorsCitationGraph(
+            graph_name='authors_citation',
+            conference_name=CONFERENCE_NAME,
+            conference_ids=CONFERENCE_IDS)
+
+        print("Starting AuthorsCitationGraph generation")
+        graphGeneration.generate(**kwargs)
+
+
 if __name__ == "__main__":
-    raise NotImplementedError(
-        "This is an abstract class. You must call its inherited classes")
+    fire.Fire(generate_graph)
