@@ -74,13 +74,14 @@ class GenerateGraph:
             for line in tqdm(f, total=self.DATASET_SIZE):
                 parsed_paper = json.loads(line)
                 try:
-                    if parsed_paper['venue']['id'] in self.conference_ids:
+                    if self.conference_ids is None or \
+                            parsed_paper['venue']['id'] in self.conference_ids:
                         # If doesn't have year in the dictionary
                         if parsed_paper['year'] not in conference_papers:
                             conference_papers[parsed_paper['year']] = []
 
                         conference_papers[parsed_paper['year']].append(
-                            super().get_data(parsed_paper))
+                            GenerateGraph.get_data(parsed_paper))
 
                 except KeyError as e:
                     pass

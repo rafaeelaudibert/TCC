@@ -12,15 +12,10 @@ import fire
 # Constants
 CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
 CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
-GRAPH_TYPE = 'author_paper'
+GRAPH_TYPE = 'collaboration'
 
 
-class AuthorPaperGraph(GenerateGraph):
-    # "Enums" for nodes/edges types
-    PAPER_NODE = 'paper'
-    AUTHOR_NODE = 'author'
-    AUTHORSHIP_EDGE = 'authorship'
-    CITATION_EDGE = 'citation'
+class CollaborationGraph(GenerateGraph):
 
     def generate(self,
                  should_save_gml: bool = True,
@@ -66,33 +61,19 @@ class AuthorPaperGraph(GenerateGraph):
             if should_generate_graph and should_read_from_dblp:
                 print(f"Parsing year {str(year)}")
 
-                # Add papers and authors to be referenced later
                 for paper in conference_papers.get(year, []):
-                    older_papers[paper['id']] = [
-                        author for author in paper['authors']]
-
-                # Only after we can link them to one another
-                # that's why we iterate twice
-                for paper in conference_papers.get(year, []):
-                    # Adiciona nodos dos papers
-                    self.G.add_node(
-                        paper['id'], name=paper['title'], type=self.PAPER_NODE)
-
-                    # Adiciona/atualiza nodos dos autores,
-                    # adicionando arestas para o nodo do paper também
+                    # First create the nodes
                     for author in paper['authors']:
-                        self.G.add_node(author['id'], name=author.get(
-                            'name', ''), type=self.AUTHOR_NODE)
+                        self.G.add_node(
+                            author['id'], name=author.get('name', ''))
 
-                        if paper['id'] in older_papers:
-                            self.G.add_edge(author['id'], paper['id'],
-                                            type=self.AUTHORSHIP_EDGE)
-
-                    # Adiciona arestas de citação
-                    for citation_id in paper['references']:
-                        if citation_id in older_papers:
-                            self.G.add_edge(paper['id'], citation_id,
-                                            type=self.CITATION_EDGE)
+                    # Add the edges
+                    for author_main in paper['authors']:
+                        for author_collaborator in paper['authors']:
+                            if author_main != author_collaborator:
+                                self.G.add_edge(author_main['id'],
+                                                author_collaborator['id'],
+                                                name=paper.get('title', ''))
 
                 self.print_graph_info()
             else:
@@ -125,7 +106,7 @@ if __name__ == "__main__":
     # Configure to current directory
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    graphGeneration = AuthorPaperGraph(
+    graphGeneration = CollaborationGraph(
         graph_name=GRAPH_TYPE,
         conference_name=CONFERENCE_NAME,
         conference_ids=CONFERENCE_IDS)

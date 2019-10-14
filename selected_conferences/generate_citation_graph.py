@@ -12,15 +12,10 @@ import fire
 # Constants
 CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
 CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
-GRAPH_TYPE = 'author_paper'
+GRAPH_TYPE = 'citation'
 
 
-class AuthorPaperGraph(GenerateGraph):
-    # "Enums" for nodes/edges types
-    PAPER_NODE = 'paper'
-    AUTHOR_NODE = 'author'
-    AUTHORSHIP_EDGE = 'authorship'
-    CITATION_EDGE = 'citation'
+class CitationGraph(GenerateGraph):
 
     def generate(self,
                  should_save_gml: bool = True,
@@ -57,8 +52,8 @@ class AuthorPaperGraph(GenerateGraph):
             with open(f'../dblp_arnet/{self.conference_name}.json', 'r') as f:
                 conference_papers = json.load(f)
 
-        # Store older_papers in a dict
-        older_papers = {}
+        # Store older_papers in an arrray
+        older_papers = []
 
         # Iterate through all the dataset years
         for year in range(self.min_year, self.max_year):
@@ -71,28 +66,14 @@ class AuthorPaperGraph(GenerateGraph):
                     older_papers[paper['id']] = [
                         author for author in paper['authors']]
 
-                # Only after we can link them to one another
-                # that's why we iterate twice
+                # Iterate twice
                 for paper in conference_papers.get(year, []):
-                    # Adiciona nodos dos papers
-                    self.G.add_node(
-                        paper['id'], name=paper['title'], type=self.PAPER_NODE)
+                    G.add_node(paper['id'])
 
-                    # Adiciona/atualiza nodos dos autores,
-                    # adicionando arestas para o nodo do paper também
-                    for author in paper['authors']:
-                        self.G.add_node(author['id'], name=author.get(
-                            'name', ''), type=self.AUTHOR_NODE)
-
-                        if paper['id'] in older_papers:
-                            self.G.add_edge(author['id'], paper['id'],
-                                            type=self.AUTHORSHIP_EDGE)
-
-                    # Adiciona arestas de citação
-                    for citation_id in paper['references']:
-                        if citation_id in older_papers:
-                            self.G.add_edge(paper['id'], citation_id,
-                                            type=self.CITATION_EDGE)
+                    if 'references' in paper:
+                        for citation_id in paper['references']:
+                            if citation_id in older_papers:
+                                G.add_edge(paper['id'], citation_id)
 
                 self.print_graph_info()
             else:
@@ -125,7 +106,7 @@ if __name__ == "__main__":
     # Configure to current directory
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    graphGeneration = AuthorPaperGraph(
+    graphGeneration = CitationGraph(
         graph_name=GRAPH_TYPE,
         conference_name=CONFERENCE_NAME,
         conference_ids=CONFERENCE_IDS)
