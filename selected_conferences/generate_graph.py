@@ -141,6 +141,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
 
         print("Starting AuthorPaperGraph generation")
         graphGeneration.generate(**kwargs)
+        del graphGeneration
 
     if run_collaboration_graph:
         from generate_collaboration_graph import CollaborationGraph
@@ -151,6 +152,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
 
         print("Starting CollaborationGraph generation")
         graphGeneration.generate(**kwargs)
+        del graphGeneration
 
     if run_citation_graph:
         from generate_citation_graph import CitationGraph
@@ -161,6 +163,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
 
         print("Starting CitationGraph generation")
         graphGeneration.generate(**kwargs)
+        del graphGeneration
 
     if run_authors_citation_graph:
         from generate_authors_citation_graph import AuthorsCitationGraph
@@ -171,6 +174,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
 
         print("Starting AuthorsCitationGraph generation")
         graphGeneration.generate(**kwargs)
+        del graphGeneration
 
 
 if __name__ == "__main__":
