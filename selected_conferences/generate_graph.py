@@ -47,7 +47,7 @@ class GenerateGraph:
         """ Save a Graph G to a file in the `.gml` format """
 
         gml_filename = self.GML_BASE_PATH + \
-                     '{}_{}_graph.gml'.format(self.graph_name,
+            '{}_{}_graph.gml'.format(self.graph_name,
                                      self.conference_name)
         nx.write_gml(self.G, gml_filename)
 
@@ -94,6 +94,18 @@ class GenerateGraph:
                 json.dump(conference_papers, f)
 
         return conference_papers
+
+    def read_from_gml(self, year: int) -> nx.DiGraph():
+        gml_filename = self.GML_BASE_PATH + '{}_{}_{}_graph.gml'.format(
+            self.conference_name, year, self.graph_name)
+        print(f"Reading graph from GML file {gml_filename}")
+
+        try:
+            self.G = nx.read_gml(gml_filename)
+            print("Finished reading graph from GML file")
+        except FileNotFoundError:
+            self.G = nx.DiGraph()
+            print("Generating empty graph, as there is no file")
 
 
 if __name__ == "__main__":

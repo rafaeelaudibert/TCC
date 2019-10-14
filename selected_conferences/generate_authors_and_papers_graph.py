@@ -96,17 +96,7 @@ class AuthorPaperGraph(GenerateGraph):
 
                 self.print_graph_info()
             else:
-                gml_filename = self.GML_BASE_PATH + \
-                    '{}_{}_{}_graph.gml'.format(
-                        self.conference_name, year, self.graph_name)
-                print(f"Reading graph from GML file {gml_filename}")
-
-                try:
-                    self.G = nx.read_gml(gml_filename)
-                    print("Finished reading graph from GML file")
-                except FileNotFoundError:
-                    self.G = nx.DiGraph()
-                    print("Generating empty graph, as there is no file")
+                self.G = self.read_from_gml(year)
 
             # Saving graph to .gml file
             if should_save_yearly_gml and G.number_of_nodes() > 0:
