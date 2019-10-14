@@ -1,4 +1,5 @@
 # Imports
+from typing import List
 import json
 import networkx as nx
 from tqdm import tqdm, trange
@@ -10,11 +11,11 @@ class GenerateGraph:
     DBLP_FILENAME = 'dblp_papers_v11.txt'
 
     def __init__(self,
-                 graph_name='',
-                 conference_name='',
-                 conference_ids=None,
-                 min_year=1890,
-                 max_year=2020):
+                 graph_name: str = '',
+                 conference_name: str = '',
+                 conference_ids: List[int] = None,
+                 min_year: int = 1890,
+                 max_year: int = 2020):
 
         self.graph_name = graph_name
         self.conference_name = conference_name
@@ -28,7 +29,7 @@ class GenerateGraph:
         raise NotImplementedError("You must implement this method")
 
     @staticmethod
-    def get_data(dictionary):
+    def get_data(dictionary: dict = {}) -> dict:
         '''Given a dictionary, parse the necessary data contained in it'''
         return {
             'id': dictionary.get('id', 0),
@@ -38,19 +39,21 @@ class GenerateGraph:
             'references': dictionary.get('references', []),
         }
 
-    def print_graph_info(self):
+    def print_graph_info(self) -> None:
         print(f"Graph size: {self.G.number_of_nodes()} nodes \
                 and {self.G.number_of_edges()} edges")
 
-    def save_gml(self):
+    def save_gml(self) -> None:
         """ Save a Graph G to a file in the `.gml` format """
 
-        nx.write_gml(self.G, self.GML_BASE_PATH +
+        gml_filename = self.GML_BASE_PATH + \
                      '{}_{}_graph.gml'.format(self.graph_name,
-                                              self.conference_name))
-        print("Saved graph to .gml file")
+                                     self.conference_name)
+        nx.write_gml(self.G, gml_filename)
 
-    def save_yearly_gml(self, year):
+        print(f"Saved graph to {gml_filename} file")
+
+    def save_yearly_gml(self, year: int) -> None:
         """
             Save a Graph G, related to a given `year`,
             to a file in the `.gml` format
@@ -61,9 +64,9 @@ class GenerateGraph:
                 self.graph_name, self.conference_name, year)
         nx.write_gml(self.G, gml_filename)
 
-        print("Saved graph to .gml file")
+        print(f"Saved graph to {gml_filename} file")
 
-    def read_from_dblp(self, save_from_dblp: bool = False):
+    def read_from_dblp(self, save_from_dblp: bool = False) -> dict:
         """
             Fetch DBLP data and parse it properly
         """

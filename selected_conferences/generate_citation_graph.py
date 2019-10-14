@@ -22,7 +22,7 @@ class CitationGraph(GenerateGraph):
                  should_save_yearly_gml: bool = False,
                  should_read_from_dblp: bool = True,
                  should_save_from_dblp: bool = False,
-                 should_generate_graph: bool = True):
+                 should_generate_graph: bool = True) -> None:
         '''Function to generate the recommender systems graph
 
             Arguments:
