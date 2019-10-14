@@ -90,8 +90,18 @@ class GenerateGraph:
                     pass
 
         if save_from_dblp:
-            with open(f'../dblp_arnet/{self.conference_name}.json', 'w') as f:
+            json_filename = '../dblp_arnet/{}_{}.json'.format(
+                self.conference_name, self.graph_name)
+            with open(json_filename, 'w') as f:
                 json.dump(conference_papers, f)
+
+        return conference_papers
+
+    def read_from_json(self) -> dict:
+        json_filename = '../dblp_arnet/{}_{}.json'.format(
+            self.conference_name, self.graph_name)
+        with open(json_filename, 'r') as f:
+            conference_papers = json.load(f)
 
         return conference_papers
 

@@ -49,8 +49,7 @@ class CitationGraph(GenerateGraph):
         if should_read_from_dblp:
             conference_papers = self.read_from_dblp(should_save_from_dblp)
         else:
-            with open(f'../dblp_arnet/{self.conference_name}.json', 'r') as f:
-                conference_papers = json.load(f)
+            conference_papers = self.read_from_json()
 
         # Store older_papers in an arrray
         older_papers = []
