@@ -62,18 +62,15 @@ class CitationGraph(GenerateGraph):
                 print(f"Parsing year {str(year)}")
 
                 # Add papers and authors to be referenced later
-                for paper in conference_papers.get(year, []):
-                    older_papers[paper['id']] = [
-                        author for author in paper['authors']]
+                older_papers.extend([paper['id'] for paper in conference_papers.get(year, [])])  # nopep8
 
-                # Iterate twice
+                # Iterate over the papers adding them to the G graph
                 for paper in conference_papers.get(year, []):
-                    G.add_node(paper['id'])
+                    self.G.add_node(paper['id'])
 
-                    if 'references' in paper:
-                        for citation_id in paper['references']:
-                            if citation_id in older_papers:
-                                G.add_edge(paper['id'], citation_id)
+                    for citation_id in paper.get('references', []):
+                        if citation_id in older_papers:
+                            self.G.add_edge(paper['id'], citation_id)
 
                 self.print_graph_info()
             else:
