@@ -10,3 +10,4 @@ img/*
 *.gephi
 .vscode/
 **/__pycache__
+/GML-old/
