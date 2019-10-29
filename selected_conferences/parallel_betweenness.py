@@ -31,6 +31,8 @@ def betweenness_centrality_parallel(G, processes=None, **kwargs):
     node_divisor = len(pool._pool) * 4
     node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
+    print("Generating betweenness in {} chunks in {} cores".format(
+        num_chunks, len(pool._pool)))
     betweenness_scores = pool.map(_betmap,
                                   zip([G] * num_chunks,
                                       [True] * num_chunks,

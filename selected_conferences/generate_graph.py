@@ -197,7 +197,6 @@ class GenerateGraph:
         if G is None:
             G = self.G
 
-        print("Generating betweenness")
         betweenness = betweenness_centrality_parallel(G)
         nx.set_node_attributes(G, betweenness, 'betweenness')
 
@@ -206,7 +205,6 @@ class GenerateGraph:
         if G is None:
             G = self.G
 
-        print("Generating closeness")
         closeness = closeness_centrality_parallel(G)
         nx.set_node_attributes(G, closeness, 'closeness')
 
