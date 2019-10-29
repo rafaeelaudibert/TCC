@@ -25,9 +25,7 @@ def _betmap(G):
     python 3 compatibility, and then unpack it when we send it to
     `betweenness_centrality_source`
     """
-    print("Starting chunk {}/{}".format(G[-1][0], G[-1][1]))
     centrality = closeness_centrality(*G[:-1])
-    print("Finished chunk {}/{}".format(G[-1][0], G[-1][1]))
 
     return centrality
 
