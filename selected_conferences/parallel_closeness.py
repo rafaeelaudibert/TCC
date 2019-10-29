@@ -36,7 +36,7 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
     node_divisor = len(pool._pool) * 4
     node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
-    print("Starting to compute closeness in {} chunks".format(num_chunks))
+    print("Generating closeness")
     graphs = [G] * num_chunks
     closeness_scores = pool.map(_betmap,
                                 zip(graphs,
@@ -45,7 +45,7 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
                                     [True] * num_chunks,
                                     [(x + 1, num_chunks) for x in range(num_chunks)])
                                 )
-    print("Finished computing closeness")
+
     pool.close()  # Remember to close the process pool
 
     print("Merging closeness values")
