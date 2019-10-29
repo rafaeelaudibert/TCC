@@ -6,9 +6,20 @@ import fire
 import networkx as nx
 from tqdm import tqdm, trange
 
+from parallel_betweenness import betweenness_centrality_parallel
+from parallel_closeness import closeness_centrality_parallel
+
 # Generic constants
-CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
-CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
+
+CONFERENCE_IDS = {
+    'all': None,
+    'AAAI-NIPS-IJCAI': ['1184914352', '1127325140', '1203999783'],
+    'CsRankings-IA': ['1184914352', '1127325140', '1203999783', '1158167855',
+                      '1124077590', '1164975091', '1180662882', '1130985203',
+                      '1188739475', '1192655580', '1173951661', '1140684652',
+                      '1135342153']
+}
+# AAAI, NIPS, IJCAI, CVPR, ECCV, ICCV, ICML, KDD, ACL, EMNLP, NAACL, SIGIR, WWW
 
 
 class GenerateGraph:
@@ -30,6 +41,7 @@ class GenerateGraph:
         self.max_year = max_year
 
         self.G = nx.Graph()  # placeholder
+        self.yearly_G = nx.Graph()  # placeholder
 
     def generate(self, **kwargs):
         raise NotImplementedError("You must implement this method")
@@ -49,26 +61,41 @@ class GenerateGraph:
         print(f"Graph size: {self.G.number_of_nodes()} nodes \
                 and {self.G.number_of_edges()} edges")
 
-    def save_gml(self) -> None:
+    def save_gml(self,
+                 G: nx.Graph = None,
+                 graph_name: str = None,
+                 conference_name: str = None) -> None:
         """ Save a Graph G to a file in the `.gml` format """
 
+        # Default values
+        G = G or self.G
+        graph_name = graph_name or self.graph_name
+        conference_name = conference_name or self.conference_name
+
         gml_filename = self.GML_BASE_PATH + \
-            '{}_{}_graph.gml'.format(self.graph_name,
-                                     self.conference_name)
-        nx.write_gml(self.G, gml_filename)
+            '{}_{}_graph.gml'.format(graph_name, conference_name)
+        nx.write_gml(G, gml_filename)
 
         print(f"Saved graph to {gml_filename} file")
 
-    def save_yearly_gml(self, year: int) -> None:
+    def save_yearly_gml(self,
+                        year: int,
+                        G: nx.Graph = None,
+                        graph_name: str = None,
+                        conference_name: str = None) -> None:
         """
             Save a Graph G, related to a given `year`,
             to a file in the `.gml` format
         """
 
+        # Default values
+        G = G or self.G
+        graph_name = graph_name or self.graph_name
+        conference_name = conference_name or self.conference_name
+
         gml_filename = self.GML_BASE_PATH + \
-            '{}_{}_{}_graph.gml'.format(
-                self.graph_name, self.conference_name, year)
-        nx.write_gml(self.G, gml_filename)
+            '{}_{}_{}_graph.gml'.format(graph_name, conference_name, year)
+        nx.write_gml(G, gml_filename)
 
         print(f"Saved graph to {gml_filename} file")
 
@@ -123,11 +150,83 @@ class GenerateGraph:
             self.G = nx.DiGraph()
             print("Generating empty graph, as there is no file")
 
+    def compute_centralities(self, degree=False, betweenness=False,
+                             closeness=False, pagerank=False,
+                             G: nx.Graph = None):
+        # Check for default G
+        if G is None:
+            G = self.G
+
+        if degree:
+            self.compute_degree(G=G)
+
+        if betweenness:
+            self.compute_betweeness(G=G)
+
+        if closeness:
+            self.compute_closeness(G=G)
+
+        if pagerank:
+            self.compute_pagerank(G=G)
+
+    def compute_degree(self, in_degree=True, out_degree=True,
+                       G: nx.Graph = None):
+
+        # Check for default G
+        if G is None:
+            G = self.G
+
+        print("Generating degree")
+        degree_data = {node: degree for node, degree in list(G.degree)}
+        nx.set_node_attributes(G, degree_data, 'degree')
+
+        if in_degree:
+            print("Generating in_degree")
+            in_degree_data = {node: degree for node,
+                              degree in list(G.in_degree)}
+            nx.set_node_attributes(G, in_degree_data, 'indegree')
+
+        if out_degree:
+            print("Generating out_degree")
+            out_degree_data = {node: degree for node,
+                               degree in list(G.out_degree)}
+            nx.set_node_attributes(G, out_degree_data, 'outdegree')
+
+    def compute_betweeness(self, G: nx.Graph = None):
+        # Check for default G
+        if G is None:
+            G = self.G
+
+        print("Generating betweenness")
+        betweenness = betweenness_centrality_parallel(G)
+        nx.set_node_attributes(G, betweenness, 'betweenness')
+
+    def compute_closeness(self, G: nx.Graph = None):
+        # Check for default G
+        if G is None:
+            G = self.G
+
+        print("Generating closeness")
+        closeness = closeness_centrality_parallel(G)
+        nx.set_node_attributes(G, closeness, 'closeness')
+
+    def compute_pagerank(self, G: nx.Graph = None):
+        # Check for default G
+        if G is None:
+            G = self.G
+
+        print("Generating pagerank")
+        pagerank = nx.pagerank(G)
+        nx.set_node_attributes(G, pagerank, 'pagerank')
+
+# endclass GenerateGraph
+
 
 def generate_graph(run_authors_and_papers_graph: bool = False,
                    run_collaboration_graph: bool = False,
                    run_citation_graph: bool = False,
                    run_authors_citation_graph: bool = False,
+                   conference_name: str = 'CsRankings-IA',
                    **kwargs: dict) -> None:
     """
         Run the required authors generation
@@ -136,8 +235,8 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
         from generate_authors_and_papers_graph import AuthorPaperGraph  # nopep8
         graphGeneration = AuthorPaperGraph(
             graph_name='author_paper',
-            conference_name=CONFERENCE_NAME,
-            conference_ids=CONFERENCE_IDS)
+            conference_name=conference_name,
+            conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
         print("Starting AuthorPaperGraph generation")
         graphGeneration.generate(**kwargs)
@@ -147,8 +246,8 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
         from generate_collaboration_graph import CollaborationGraph
         graphGeneration = CollaborationGraph(
             graph_name='collaboration',
-            conference_name=CONFERENCE_NAME,
-            conference_ids=CONFERENCE_IDS)
+            conference_name=conference_name,
+            conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
         print("Starting CollaborationGraph generation")
         graphGeneration.generate(**kwargs)
@@ -158,8 +257,8 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
         from generate_citation_graph import CitationGraph
         graphGeneration = CitationGraph(
             graph_name='citation',
-            conference_name=CONFERENCE_NAME,
-            conference_ids=CONFERENCE_IDS)
+            conference_name=conference_name,
+            conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
         print("Starting CitationGraph generation")
         graphGeneration.generate(**kwargs)
@@ -169,8 +268,8 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
         from generate_authors_citation_graph import AuthorsCitationGraph
         graphGeneration = AuthorsCitationGraph(
             graph_name='authors_citation',
-            conference_name=CONFERENCE_NAME,
-            conference_ids=CONFERENCE_IDS)
+            conference_name=conference_name,
+            conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
         print("Starting AuthorsCitationGraph generation")
         graphGeneration.generate(**kwargs)
