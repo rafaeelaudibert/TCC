@@ -16,6 +16,7 @@
 | Self-citing               | Detect the areas which most/least self-cite           |         	        |          	        |
 | Cooperation inter-area    | Find what areas tend to cite other areas the most     |         	        |          	        |
 | Countries centrality      | Try to infer country and compute centrality           |         	        |          	        |
+| Affiliation centrality    | Try to infer afilliation and compute centrality       |                   |                   |
 | China/EUA Cooperation     | Find out if those countries work together + evolution |         	        |          	        |
 
 
