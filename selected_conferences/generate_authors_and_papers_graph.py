@@ -29,36 +29,42 @@ class AuthorPaperGraph(GenerateGraph):
         super().__init__(*args, **kwargs)
 
     def generate(self,
-                 should_save_gml: bool = True,
-                 should_save_yearly_gml: bool = False,
-                 should_read_from_dblp: bool = True,
-                 should_save_from_dblp: bool = False,
-                 should_generate_graph: bool = True) -> None:
+                 save_gml: bool = True,
+                 save_yearly_gml: bool = False,
+                 save_non_cummulated_yearly_gml: bool = False,
+                 read_from_dblp: bool = True,
+                 save_from_dblp: bool = False,
+                 generate_graph: bool = True,
+                 compute_degree: bool = True,
+                 compute_closeness: bool = True,
+                 compute_betweenness: bool = True,
+                 compute_pagerank: bool = True) -> None:
         '''Function to generate the recommender systems graph
 
             Arguments:
 
-                should_save_gml (bool): Save the final graph generated to a GML
+                save_gml (bool): Save the final graph generated to a GML
                     file, named by `self.graph_file`
 
-                should_save_yearly_gml (bool): Save the graph generated in each
+                save_yearly_gml (bool): Save the graph generated in each
                     year timestep to a GML file
 
-                should_read_from_dblp (bool): Read the graph from the dblp json
+                read_from_dblp (bool): Read the graph from the dblp json
                     file. If false, reads from the `self.conference_name` json
 
-                should_save_from_dblp (bool): Saves the parsed papers to a json
+                save_from_dblp (bool): Saves the parsed papers to a json
                     file.
 
-                should_generate_graph (bool): Generates the authors_and_papers
+                generate_graph (bool): Generates the authors_and_papers
                     graph from the  articles read
         '''
 
         self.G = nx.DiGraph()
+        self.yearly_G = nx.DiGraph()
 
         # Read file adding to array
-        if should_read_from_dblp:
-            conference_papers = self.read_from_dblp(should_save_from_dblp)
+        if read_from_dblp:
+            conference_papers = self.read_from_dblp(save_from_dblp)
         else:
             conference_papers = self.read_from_json()
 
@@ -68,7 +74,11 @@ class AuthorPaperGraph(GenerateGraph):
         # Iterate through all the dataset years
         for year in range(self.min_year, self.max_year):
 
-            if should_generate_graph and should_read_from_dblp:
+            # Reset yearly graph
+            if save_non_cummulated_yearly_gml:
+                self.yearly_G = nx.DiGraph()
+
+            if generate_graph and read_from_dblp:
                 print(f"Parsing year {str(year)}")
 
                 # Add papers and authors to be referenced later
@@ -83,15 +93,27 @@ class AuthorPaperGraph(GenerateGraph):
                     self.G.add_node(
                         paper['id'], name=paper['title'], type=self.PAPER_NODE)
 
+                    if save_non_cummulated_yearly_gml:
+                        self.yearly_G.add_node(
+                            paper['id'], name=paper['title'], type=self.PAPER_NODE)
+
                     # Adiciona/atualiza nodos dos autores,
                     # adicionando arestas para o nodo do paper também
                     for author in paper['authors']:
                         self.G.add_node(author['id'], name=author.get(
                             'name', ''), type=self.AUTHOR_NODE)
 
+                        if save_non_cummulated_yearly_gml:
+                            self.yearly_G.add_node(author['id'], name=author.get(
+                                'name', ''), type=self.AUTHOR_NODE)
+
                         if paper['id'] in older_papers:
                             self.G.add_edge(author['id'], paper['id'],
                                             type=self.AUTHORSHIP_EDGE)
+
+                            if save_non_cummulated_yearly_gml:
+                                self.yearly_G.add_edge(author['id'], paper['id'],
+                                                       type=self.AUTHORSHIP_EDGE)
 
                     # Adiciona arestas de citação
                     for citation_id in paper['references']:
@@ -99,20 +121,42 @@ class AuthorPaperGraph(GenerateGraph):
                             self.G.add_edge(paper['id'], citation_id,
                                             type=self.CITATION_EDGE)
 
+                            if save_non_cummulated_yearly_gml:
+                                self.yearly_G.add_edge(paper['id'], citation_id,
+                                                       type=self.CITATION_EDGE)
+
                 self.print_graph_info()
             else:
                 self.G = self.read_from_gml(year)
 
             # Saving graph to .gml file
-            if should_save_yearly_gml and self.G.number_of_nodes() > 0:
+            if save_yearly_gml and self.G.number_of_nodes() > 0:
+                # Compute centralities for each year
+                self.compute_centralities(degree=compute_degree,
+                                          betweenness=compute_betweenness,
+                                          closeness=compute_closeness,
+                                          pagerank=compute_pagerank)
+
                 super().save_yearly_gml(year)
 
-        if should_generate_graph and should_read_from_dblp:
+                if save_non_cummulated_yearly_gml:
+                    # Compute centralities for each year
+                    self.compute_centralities(degree=compute_degree,
+                                              betweenness=compute_betweenness,
+                                              closeness=compute_closeness,
+                                              pagerank=compute_pagerank,
+                                              G=self.yearly_G)
+
+                    super().save_yearly_gml(year,
+                                            G=self.yearly_G,
+                                            graph_name='yearly_' + self.graph_name)
+
+        if generate_graph and read_from_dblp:
             print("Finished creating the graph")
             self.print_graph_info()
 
         # Save graph to .gml
-        if should_generate_graph and should_save_gml:
+        if generate_graph and save_gml:
             super().save_gml()
 
 
