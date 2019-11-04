@@ -49,7 +49,6 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
 
     pool.close()  # Remember to close the process pool
 
-    print("Merging closeness values")
     # Reduce the partial solutions
     if len(closeness_scores) > 0:
         closeness_cumulator = closeness_scores[0]
@@ -59,10 +58,8 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
                     closeness_cumulator[n] = closeness[n]
                 else:
                     closeness_cumulator[n] += closeness[n]
-        print("Finished merging")
         return closeness_cumulator
     else:
-        print("No closeness to merge")
         return {}
 
 
