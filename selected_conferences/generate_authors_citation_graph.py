@@ -54,8 +54,8 @@ class AuthorsCitationGraph(GenerateGraph):
                     graph from the  articles read
         '''
 
-        self.G = nx.DiGraph()
-        self.yearly_G = nx.DiGraph()
+        self.G = nx.MultiDiGraph()
+        self.yearly_G = nx.MultiDiGraph()
 
         # Read file adding to array
         if read_from_dblp:
