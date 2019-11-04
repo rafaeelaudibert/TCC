@@ -167,10 +167,7 @@ class GenerateGraph:
             self.compute_closeness(G=G)
 
         if pagerank:
-            try:
-                self.compute_pagerank(G=G)
-            except nx.exception.NetworkXNotImplemented as e:
-                print("Error while running pagerank", e)
+            self.compute_pagerank(G=G)
 
     def compute_degree(self, in_degree=True, out_degree=True,
                        G: nx.Graph = None):
@@ -217,7 +214,13 @@ class GenerateGraph:
             G = self.G
 
         print("Generating pagerank")
-        pagerank = nx.pagerank(G)
+        try:
+            pagerank = nx.pagerank(G)
+        except nx.exception.NetworkXNotImplemented:
+            print('Not implemented pagerank for MultiGraph. \
+                   Converting to normal graph')
+            pagerank = nx.pagerank(nx.DiGraph(G))
+
         nx.set_node_attributes(G, pagerank, 'pagerank')
 
 # endclass GenerateGraph
