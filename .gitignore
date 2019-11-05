@@ -8,6 +8,8 @@ img/*
 *.pyc
 *.log
 *.gephi
+*.svg
+*.tar.gz
 .vscode/
 **/__pycache__
 /GML-old/
