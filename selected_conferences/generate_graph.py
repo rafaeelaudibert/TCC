@@ -54,7 +54,7 @@ class GenerateGraph:
             'title': dictionary.get('title', ''),
             'year': int(dictionary.get('year', 0)),
             'authors': dictionary.get('authors', []),
-            'references': dictionary.get('references', []),
+            'references': dictionary.get('references', [])
         }
 
     def print_graph_info(self) -> None:
@@ -99,28 +99,36 @@ class GenerateGraph:
 
         print(f"Saved graph to {gml_filename} file")
 
-    def read_from_dblp(self, save_from_dblp: bool = False) -> dict:
+    def read_from_dblp(self,
+                       read_saved_from_dblp: bool = False,
+                       save_from_dblp: bool = False) -> dict:
         """
             Fetch DBLP data and parse it properly
         """
 
         conference_papers = {}
 
-        with open('../dblp_arnet/{}'.format(self.DBLP_FILENAME), 'r') as f:
-            for line in tqdm(f, total=self.DATASET_SIZE):
-                parsed_paper = json.loads(line)
-                try:
-                    if self.conference_ids is None or \
-                            parsed_paper['venue']['id'] in self.conference_ids:
-                        # If doesn't have year in the dictionary
-                        if parsed_paper['year'] not in conference_papers:
-                            conference_papers[parsed_paper['year']] = []
+        if read_saved_from_dblp:
+            json_filename = '../dblp_arnet/{}_{}.json'.format(
+                self.conference_name, self.graph_name)
+            with open(json_filename, 'r') as f:
+                conference_papers = json.load(f)
+        else:
+            with open('../dblp_arnet/{}'.format(self.DBLP_FILENAME), 'r') as f:
+                for line in tqdm(f, total=self.DATASET_SIZE):
+                    parsed_paper = json.loads(line)
+                    try:
+                        if self.conference_ids is None or \
+                                parsed_paper['venue']['id'] in self.conference_ids:
+                            # If doesn't have year in the dictionary
+                            if parsed_paper['year'] not in conference_papers:
+                                conference_papers[parsed_paper['year']] = []
 
-                        conference_papers[parsed_paper['year']].append(
-                            GenerateGraph.get_data(parsed_paper))
+                            conference_papers[parsed_paper['year']].append(
+                                GenerateGraph.get_data(parsed_paper))
 
-                except KeyError as e:
-                    pass
+                    except KeyError as e:
+                        pass
 
         if save_from_dblp:
             json_filename = '../dblp_arnet/{}_{}.json'.format(

@@ -34,6 +34,7 @@ class AuthorPaperGraph(GenerateGraph):
                  save_non_cummulated_yearly_gml: bool = False,
                  read_from_dblp: bool = True,
                  save_from_dblp: bool = False,
+                 read_saved_from_dblp: bool = False,
                  generate_graph: bool = True,
                  compute_degree: bool = True,
                  compute_closeness: bool = True,
@@ -64,7 +65,8 @@ class AuthorPaperGraph(GenerateGraph):
 
         # Read file adding to array
         if read_from_dblp:
-            conference_papers = self.read_from_dblp(save_from_dblp)
+            conference_papers = self.read_from_dblp(
+                read_saved_from_dblp, save_from_dblp)
         else:
             conference_papers = self.read_from_json()
 
