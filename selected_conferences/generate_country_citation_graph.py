@@ -34,9 +34,9 @@ USA_ENUM = ['ak', 'alaska', 'al', 'alabama', 'ar', 'arkansas', 'az', 'arizona',
 
 
 def infer_country_from(organization: str):
-    print(organization)
-    country = organization.split(
-        ', ')[-1][:-5].replace('.', '').lower() if '#TAB#' in organization else None
+    country = organization.split(', ')[-1][:-5].replace('.', '').lower()
+    country = country if '#TAB#' in organization else None
+
     return country if country not in USA_ENUM else 'USA'
 
 
@@ -118,8 +118,8 @@ class CountryCitationGraph(GenerateGraph):
                         if country is not None:
                             self.G.add_node(country)
 
-                        if save_non_cummulated_yearly_gml:
-                            self.yearly_G.add_node(country)
+                            if save_non_cummulated_yearly_gml:
+                                self.yearly_G.add_node(country)
 
                     # Adiciona arestas
                     for citation_id in paper['references']:
