@@ -238,6 +238,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
                    run_collaboration_graph: bool = False,
                    run_citation_graph: bool = False,
                    run_authors_citation_graph: bool = False,
+                   run_country_citation_graph: bool = False,
                    conference_name: str = 'CsRankings-IA',
                    **kwargs: dict) -> None:
     """
@@ -284,6 +285,17 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
             conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
         print("Starting AuthorsCitationGraph generation")
+        graphGeneration.generate(**kwargs)
+        del graphGeneration
+
+    if run_country_citation_graph:
+        from generate_country_citation_graph import CountryCitationGraph
+        graphGeneration = CountryCitationGraph(
+            graph_name='authors_citation',
+            conference_name=conference_name,
+            conference_ids=CONFERENCE_IDS.get(conference_name, None))
+
+        print("Starting CountryCitationGraph generation")
         graphGeneration.generate(**kwargs)
         del graphGeneration
 
