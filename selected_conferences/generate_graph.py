@@ -291,7 +291,7 @@ def generate_graph(run_authors_and_papers_graph: bool = False,
     if run_country_citation_graph:
         from generate_country_citation_graph import CountryCitationGraph
         graphGeneration = CountryCitationGraph(
-            graph_name='authors_citation',
+            graph_name='countries_citation',
             conference_name=conference_name,
             conference_ids=CONFERENCE_IDS.get(conference_name, None))
 
