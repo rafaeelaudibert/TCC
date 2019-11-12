@@ -16,28 +16,22 @@ CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
 GRAPH_TYPE = 'countries_citation'
 
 
-USA_ENUM = ['ak', 'alaska', 'al', 'alabama', 'ar', 'arkansas', 'az', 'arizona',
-            'ca', 'california', 'co', 'colorado', 'ct', 'connecticut', 'de',
-            'delaware', 'fl', 'florida', 'ga', 'georgia', 'hi', 'hawaii', 'ia',
-            'iowa', 'id', 'idaho', 'il', 'illinois', 'in', 'indiana', 'ks',
-            'kansas', 'ky', 'kentucky', 'la', 'louisiana', 'ma',
-            'massachusetts', 'md', 'maryland', 'me', 'maine', 'mi', 'michigan',
-            'mn', 'minnesota', 'mo', 'missouri', 'ms', 'mississippi', 'mt',
-            'montana', 'nv', 'nevada', 'nc', 'north carolina', 'nd',
-            'north dakota', 'ne', 'nebraska', 'nh', 'new hampshire', 'nj',
-            'new jersey', 'nm', 'new mexico', 'nv', 'nevada', 'ny', 'new york',
-            'oh', 'ohio', 'ok', 'oklahoma', 'or', 'oregon', 'pa',
-            'pennsylvania', 'ri', 'rhode island', 'sc', 'south carolina', 'sd',
-            'south dakota', 'tn', 'tennessee', 'tx', 'texas', 'ut', 'utah', 'vt',
-            'vermont', 'va', 'virginia', 'wa', 'washington', 'wi', 'wisconsin',
-            'wv', 'west virginia', 'wy', 'wyoming', 'dc', 'columbia']
+with open('./country_replacement.json', 'r') as f:
+    COUNTRY_REPLACEMENT = json.read(f)
 
 
 def infer_country_from(organization: str):
+    # Parse last name
     country = organization.split(', ')[-1][:-5].replace('.', '').lower()
+
+    # Check for tab at the end
     country = country if '#TAB#' in organization else None
 
-    return country if country not in USA_ENUM else 'USA'
+    # Make country replacement
+    country = country if country not in COUNTRY_REPLACEMENT.keys(
+    ) else COUNTRY_REPLACEMENT[country]
+
+    return country
 
 
 class CountryCitationGraph(GenerateGraph):

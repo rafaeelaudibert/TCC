@@ -13,3 +13,6 @@ img/*
 .vscode/
 **/__pycache__
 /GML-old/
+
+
+!country_replacement.json
