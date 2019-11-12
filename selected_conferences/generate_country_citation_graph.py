@@ -41,7 +41,7 @@ class CountryCitationGraph(GenerateGraph):
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
         with open('./country_replacement.json', 'r') as f:
-            COUNTRY_REPLACEMENT = json.read(f)
+            COUNTRY_REPLACEMENT = json.load(f)
 
         super().__init__(*args, **kwargs)
 
