@@ -15,9 +15,7 @@ CONFERENCE_IDS = ['1184914352', '1127325140', '1203999783']
 CONFERENCE_NAME = 'AAAI-NIPS-IJCAI'
 GRAPH_TYPE = 'countries_citation'
 
-
-with open('./country_replacement.json', 'r') as f:
-    COUNTRY_REPLACEMENT = json.read(f)
+COUNTRY_REPLACEMENT = {}
 
 
 def infer_country_from(organization: str):
@@ -37,8 +35,13 @@ def infer_country_from(organization: str):
 class CountryCitationGraph(GenerateGraph):
 
     def __init__(self, *args, **kwargs):
+        global COUNTRY_REPLACEMENT
+
         # Configure to current directory
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+        with open('./country_replacement.json', 'r') as f:
+            COUNTRY_REPLACEMENT = json.read(f)
 
         super().__init__(*args, **kwargs)
 
