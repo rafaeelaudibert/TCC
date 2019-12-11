@@ -13,6 +13,7 @@ img/*
 .vscode/
 **/__pycache__
 /GML-old/
+*.csv
 
 
 !country_replacement.json

@@ -11,7 +11,8 @@ CONFERENCES = ['1184914352', '1127325140', '1203999783', '1158167855',
 CONFERENCES_MAP = {key: val for key, val in zip(CONFERENCES, [
                                                 'AAAI', 'NIPS', 'IJCAI', 'CVPR', 'ECCV', 'ICCV', 'ICML', 'KDD', 'ACL', 'EMNLP', 'NAACL', 'SIGIR', 'WWW'])}  # nopep8
 
-THE_CONFERENCE = '1180662882'  # CVPR
+THE_CONFERENCE = '1158167855'  # CVPR
+CONFERENCE_NAME = 'CVPR'
 
 
 def get_data(dictionary: dict = {}) -> dict:
@@ -36,11 +37,6 @@ older_papers = {}
 # Dict with data
 citation_data = {}
 
-for paper in conference_papers.get(str(1996), []):
-    if paper['venue_id'] == '1203999783':
-        print(paper)
-exit(0)
-
 # Iterate through all the dataset years
 for year in tqdm(range(1890, 2020)):
 
@@ -64,7 +60,8 @@ for year in citation_data:
     for conference in citation_data[year]:
         csv_array.append((year, conference, citation_data[year][conference]))
 
-with open('./ICML.csv', 'w') as f:
+output_filename = f'./CSV/{CONFERENCE_NAME}.csv'
+with open(output_filename) as f:
     f.write("year, conference, value\n")
 
     for thing in csv_array:
