@@ -29,9 +29,9 @@ class AuthorPaperGraph(GenerateGraph):
         super().__init__(*args, **kwargs)
 
     def generate(self,
-                 save_gml: bool = True,
-                 save_yearly_gml: bool = False,
-                 save_non_cummulated_yearly_gml: bool = False,
+                 save_gpickle: bool = True,
+                 save_yearly_gpickle: bool = False,
+                 save_non_cummulated_yearly_gpickle: bool = False,
                  read_from_dblp: bool = True,
                  save_from_dblp: bool = False,
                  read_saved_from_dblp: bool = False,
@@ -44,10 +44,10 @@ class AuthorPaperGraph(GenerateGraph):
 
             Arguments:
 
-                save_gml (bool): Save the final graph generated to a GML
+                save_gpickle (bool): Save the final graph generated to a GML
                     file, named by `self.graph_file`
 
-                save_yearly_gml (bool): Save the graph generated in each
+                save_yearly_gpickle (bool): Save the graph generated in each
                     year timestep to a GML file
 
                 read_from_dblp (bool): Read the graph from the dblp json
@@ -77,7 +77,7 @@ class AuthorPaperGraph(GenerateGraph):
         for year in range(self.min_year, self.max_year):
 
             # Reset yearly graph
-            if save_non_cummulated_yearly_gml:
+            if save_non_cummulated_yearly_gpickle:
                 self.yearly_G = nx.DiGraph()
 
             if generate_graph and read_from_dblp:
@@ -95,7 +95,7 @@ class AuthorPaperGraph(GenerateGraph):
                     self.G.add_node(
                         paper['id'], name=paper['title'], type=self.PAPER_NODE)
 
-                    if save_non_cummulated_yearly_gml:
+                    if save_non_cummulated_yearly_gpickle:
                         self.yearly_G.add_node(
                             paper['id'], name=paper['title'], type=self.PAPER_NODE)
 
@@ -105,7 +105,7 @@ class AuthorPaperGraph(GenerateGraph):
                         self.G.add_node(author['id'], name=author.get(
                             'name', ''), type=self.AUTHOR_NODE)
 
-                        if save_non_cummulated_yearly_gml:
+                        if save_non_cummulated_yearly_gpickle:
                             self.yearly_G.add_node(author['id'], name=author.get(
                                 'name', ''), type=self.AUTHOR_NODE)
 
@@ -113,7 +113,7 @@ class AuthorPaperGraph(GenerateGraph):
                             self.G.add_edge(author['id'], paper['id'],
                                             type=self.AUTHORSHIP_EDGE)
 
-                            if save_non_cummulated_yearly_gml:
+                            if save_non_cummulated_yearly_gpickle:
                                 self.yearly_G.add_edge(author['id'], paper['id'],
                                                        type=self.AUTHORSHIP_EDGE)
 
@@ -123,25 +123,25 @@ class AuthorPaperGraph(GenerateGraph):
                             self.G.add_edge(paper['id'], citation_id,
                                             type=self.CITATION_EDGE)
 
-                            if save_non_cummulated_yearly_gml:
+                            if save_non_cummulated_yearly_gpickle:
                                 self.yearly_G.add_edge(paper['id'], citation_id,
                                                        type=self.CITATION_EDGE)
 
                 self.print_graph_info()
             else:
-                self.G = self.read_from_gml(year)
+                self.G = self.read_from_gpickle(year)
 
-            # Saving graph to .gml file
-            if save_yearly_gml and self.G.number_of_nodes() > 0:
+            # Saving graph to .gpickle file
+            if save_yearly_gpickle and self.G.number_of_nodes() > 0:
                 # Compute centralities for each year
                 self.compute_centralities(degree=compute_degree,
                                           betweenness=compute_betweenness,
                                           closeness=compute_closeness,
                                           pagerank=compute_pagerank)
 
-                super().save_yearly_gml(year)
+                super().save_yearly_gpickle(year)
 
-                if save_non_cummulated_yearly_gml:
+                if save_non_cummulated_yearly_gpickle:
                     # Compute centralities for each year
                     self.compute_centralities(degree=compute_degree,
                                               betweenness=compute_betweenness,
@@ -149,17 +149,17 @@ class AuthorPaperGraph(GenerateGraph):
                                               pagerank=compute_pagerank,
                                               G=self.yearly_G)
 
-                    super().save_yearly_gml(year,
-                                            G=self.yearly_G,
-                                            graph_name='yearly_' + self.graph_name)
+                    super().save_yearly_gpickle(year,
+                                                G=self.yearly_G,
+                                                graph_name='yearly_' + self.graph_name)
 
         if generate_graph and read_from_dblp:
             print("Finished creating the graph")
             self.print_graph_info()
 
-        # Save graph to .gml
-        if generate_graph and save_gml:
-            super().save_gml()
+        # Save graph to .gpickle
+        if generate_graph and save_gpickle:
+            super().save_gpickle()
 
 
 if __name__ == "__main__":

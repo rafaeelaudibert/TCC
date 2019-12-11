@@ -61,31 +61,31 @@ class GenerateGraph:
         print(f"Graph size: {self.G.number_of_nodes()} nodes \
                 and {self.G.number_of_edges()} edges")
 
-    def save_gml(self,
-                 G: nx.Graph = None,
-                 graph_name: str = None,
-                 conference_name: str = None) -> None:
-        """ Save a Graph G to a file in the `.gml` format """
+    def save_gpickle(self,
+                     G: nx.Graph = None,
+                     graph_name: str = None,
+                     conference_name: str = None) -> None:
+        """ Save a Graph G to a file in the `.gpickle` format """
 
         # Default values
         G = G or self.G
         graph_name = graph_name or self.graph_name
         conference_name = conference_name or self.conference_name
 
-        gml_filename = self.GML_BASE_PATH + \
-            '{}_{}_graph.gml'.format(graph_name, conference_name)
-        nx.write_gml(G, gml_filename)
+        gpickle_filename = self.GML_BASE_PATH + \
+            '{}_{}_graph.gpickle'.format(graph_name, conference_name)
+        nx.write_gpickle(G, gpickle_filename)
 
-        print(f"Saved graph to {gml_filename} file")
+        print(f"Saved graph to {gpickle_filename} file")
 
-    def save_yearly_gml(self,
-                        year: int,
-                        G: nx.Graph = None,
-                        graph_name: str = None,
-                        conference_name: str = None) -> None:
+    def save_yearly_gpickle(self,
+                            year: int,
+                            G: nx.Graph = None,
+                            graph_name: str = None,
+                            conference_name: str = None) -> None:
         """
             Save a Graph G, related to a given `year`,
-            to a file in the `.gml` format
+            to a file in the `.gpickle` format
         """
 
         # Default values
@@ -93,11 +93,11 @@ class GenerateGraph:
         graph_name = graph_name or self.graph_name
         conference_name = conference_name or self.conference_name
 
-        gml_filename = self.GML_BASE_PATH + \
-            '{}_{}_{}_graph.gml'.format(graph_name, conference_name, year)
-        nx.write_gml(G, gml_filename)
+        gpickle_filename = self.GML_BASE_PATH + \
+            '{}_{}_{}_graph.gpickle'.format(graph_name, conference_name, year)
+        nx.write_gpickle(G, gpickle_filename)
 
-        print(f"Saved graph to {gml_filename} file")
+        print(f"Saved graph to {gpickle_filename} file")
 
     def read_from_dblp(self,
                        read_saved_from_dblp: bool = False,
@@ -146,13 +146,13 @@ class GenerateGraph:
 
         return conference_papers
 
-    def read_from_gml(self, year: int) -> nx.DiGraph():
-        gml_filename = self.GML_BASE_PATH + '{}_{}_{}_graph.gml'.format(
+    def read_from_gpickle(self, year: int) -> nx.DiGraph():
+        gpickle_filename = self.GML_BASE_PATH + '{}_{}_{}_graph.gpickle'.format(
             self.conference_name, year, self.graph_name)
-        print(f"Reading graph from GML file {gml_filename}")
+        print(f"Reading graph from GML file {gpickle_filename}")
 
         try:
-            self.G = nx.read_gml(gml_filename)
+            self.G = nx.read_gpickle(gpickle_filename)
             print("Finished reading graph from GML file")
         except FileNotFoundError:
             self.G = nx.DiGraph()
