@@ -134,7 +134,7 @@ class GenerateGraph:
             json_filename = '../dblp_arnet/{}_{}.json'.format(
                 self.conference_name, self.graph_name)
             with open(json_filename, 'w') as f:
-                json.dump(conference_papers, f)
+                json.dump(conference_papers, f, indent=4)
 
         return conference_papers
 
