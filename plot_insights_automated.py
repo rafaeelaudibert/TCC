@@ -120,7 +120,7 @@ def main():
             plt.plot([min(X), max(X)], [0, 0], dashes=[
                      15, 5, 15, 5], linewidth=0.5)
 
-            # Plot start on award year
+            # Plot star on award year
             if plot['award_year'] is not None and str(plot['award_year']) in plot_data:   # nopep8
                 plt.scatter([plot['award_year']], [
                             plot_data[str(plot['award_year'])]],

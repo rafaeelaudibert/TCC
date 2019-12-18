@@ -25,14 +25,14 @@ def save_counts(filename, counts):
 
 def find_loop_count(search_path: str):
     """
-        path: str = Name of a GML file which we want to sort
+        path: str = Name of a gpickle file which we want to sort
             by their features or a path where we want to do it
             in all the files contained by it
     """
 
     for filename in tqdm(glob(search_path)):
         tqdm.write("Reading {}".format(filename))
-        G = nx.read_gml(filename)
+        G = nx.read_gpickle(filename)
 
         tqdm.write("Counting (and sorting) self cites")
         loop_counts = Counter([edge[0]

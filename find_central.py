@@ -26,7 +26,7 @@ def sort_and_save(data, filename: str, key: str):
 
 def find_central(search_path: str):
     """
-        path: str = Name of a GML file which we want to sort
+        path: str = Name of a GPICKLE file which we want to sort
             by their features or a path where we want to do it
             in all the files contained by it
     """
@@ -34,7 +34,7 @@ def find_central(search_path: str):
     for filename in tqdm(glob(search_path)):
 
         tqdm.write("Reading {}".format(filename))
-        data = list(nx.read_gml(filename).nodes(data=True))
+        data = list(nx.read_gpickle(filename).nodes(data=True))
 
         sort_and_save(data, filename, 'degree')
         sort_and_save(data, filename, 'indegree')
