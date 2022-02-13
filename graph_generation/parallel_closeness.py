@@ -36,16 +36,18 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
     node_divisor = len(pool._pool) * 4
     node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
-    print("Generating closeness in {} chunks in {} cores".format(
-        num_chunks, len(pool._pool)))
+    print("Generating closeness in {} chunks in {} cores".format(num_chunks, len(pool._pool)))
     graphs = [G] * num_chunks
-    closeness_scores = pool.map(_betmap,
-                                zip(graphs,
-                                    node_chunks,
-                                    [None] * num_chunks,
-                                    [True] * num_chunks,
-                                    [(x + 1, num_chunks) for x in range(num_chunks)])
-                                )
+    closeness_scores = pool.map(
+        _betmap,
+        zip(
+            graphs,
+            node_chunks,
+            [None] * num_chunks,
+            [True] * num_chunks,
+            [(x + 1, num_chunks) for x in range(num_chunks)],
+        ),
+    )
 
     pool.close()  # Remember to close the process pool
 
@@ -69,8 +71,7 @@ def closeness_centrality(G, u=None, distance=None, wf_improved=True):
 
     if distance is not None:
         # use Dijkstra's algorithm with specified attribute as edge weight
-        path_length = functools.partial(nx.single_source_dijkstra_path_length,
-                                        weight=distance)
+        path_length = functools.partial(nx.single_source_dijkstra_path_length, weight=distance)
     else:
         path_length = nx.single_source_shortest_path_length
 
