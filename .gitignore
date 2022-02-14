@@ -13,8 +13,9 @@ img/*
 *.tar.gz
 .vscode/
 **/__pycache__
-/GML-old/
+GML-old/
 *.csv
+dblp_tmp/
 
 
 !country_replacement.json
