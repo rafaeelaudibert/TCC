@@ -1,8 +1,6 @@
 from gzip import GzipFile
 import click
-import jsonstreams
-import xmltodict
-from tqdm import tqdm
+from streamxml2json import stream_xml2json
 
 ESTIMATED_TOTAL = 8950000  # Estimated looking at previous .json files
 
@@ -16,25 +14,18 @@ def main(input_filename, output_filename):
     outputting an equivalent JSON file to OUTPUT_FILENAME
     """
 
-    tqdm_handler = tqdm(desc="XML Parsing (Estimated)", total=ESTIMATED_TOTAL)
-    output_stream = jsonstreams.Stream(
-        jsonstreams.Type.ARRAY,
-        filename=output_filename,
+    gzip_file = GzipFile(input_filename)
+    tqdm_kwargs = {"total": ESTIMATED_TOTAL}
+
+    stream_xml2json(
+        gzip_file,
+        output_filename,
+        item_depth=2,
         pretty=True,
         indent=2,
+        tqdm_kwargs=tqdm_kwargs,
     )
-
-    def handle_entry(_, entry):
-        output_stream.write(entry)
-        tqdm_handler.update()
-
-        return True
-
-    xmltodict.parse(GzipFile(input_filename), item_depth=2, item_callback=handle_entry)
-
-    # Remember to close the open fd-like instances at the end of the execution
-    output_stream.close()
-    tqdm_handler.close()
+    gzip_file.close()
 
 
 if __name__ == "__main__":
