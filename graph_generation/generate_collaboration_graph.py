@@ -65,9 +65,6 @@ class CollaborationGraph(GenerateGraph):
         else:
             conference_papers = self.read_from_json()
 
-        # Store older_papers in a dict
-        older_papers = {}
-
         # Iterate through all the dataset years
         for year in range(self.min_year, self.max_year):
 

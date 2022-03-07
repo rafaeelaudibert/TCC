@@ -11,6 +11,10 @@ The `dblp` dataset is generated from the XML dump available at [https://dblp.uni
 You can automate this running `./scripts/download_dblp.sh` in a shell.
 It will automatically download the required python libraries, DBLP's dataset and converting it to a JSON file located at the root of the project
 
+## DBLP Arnet dataset
+
+We also use the DBLP arnet dataset available [here](https://www.aminer.cn/citation) based on a paper by Tang et al.
+
 ## The library
 
 While developing this project, we had to parse a huge XML file into a JSON file (as you can see in the previous section). To achieve so, we had to stream both the XML reading as the JSON writing. Using the already existent [jsonstreams](https://github.com/dcbaker/jsonstreams) and [xmltodict](https://github.com/martinblech/xmltodict) libraries, the [streamxml2json](https://github.com/rafaeelaudibert/streamxml2json) library was built.

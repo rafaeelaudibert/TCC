@@ -10,7 +10,6 @@ from parallel_betweenness import betweenness_centrality_parallel
 from parallel_closeness import closeness_centrality_parallel
 
 # Generic constants
-
 CONFERENCE_IDS = {
     "all": None,
     "AAAI-NIPS-IJCAI": ["1184914352", "1127325140", "1203999783"],
@@ -32,11 +31,13 @@ CONFERENCE_IDS = {
     ],
 }
 
+VERSION = "v13"
+
 
 class GenerateGraph:
-    DATASET_SIZE = 4_107_340
+    DATASET_SIZE = 5_354_309
     GML_BASE_PATH = "../GML/"
-    DBLP_FILENAME = "dblp_papers_v11.txt"
+    DBLP_FILENAME = f"dblp_papers_{VERSION}.txt"
 
     def __init__(
         self,
@@ -44,7 +45,7 @@ class GenerateGraph:
         conference_name: str = "",
         conference_ids: List[int] = None,
         min_year: int = 1890,
-        max_year: int = 2020,
+        max_year: int = 2021,
     ):
 
         self.graph_name = graph_name
@@ -71,10 +72,7 @@ class GenerateGraph:
         }
 
     def print_graph_info(self) -> None:
-        print(
-            f"Graph size: {self.G.number_of_nodes()} nodes \
-                and {self.G.number_of_edges()} edges"
-        )
+        print(f"Graph size: {self.G.number_of_nodes()} nodes and {self.G.number_of_edges()} edges")
 
     def save_gpickle(self, G: nx.Graph = None, graph_name: str = None, conference_name: str = None) -> None:
         """Save a Graph G to a file in the `.gpickle` format"""
@@ -121,14 +119,14 @@ class GenerateGraph:
         else:
             with open("../dblp_arnet/{}".format(self.DBLP_FILENAME), "r") as f:
                 for line in tqdm(f, total=self.DATASET_SIZE):
-                    parsed_paper = json.loads(line)
+                    parsed_line = json.loads(line)
                     try:
-                        if self.conference_ids is None or parsed_paper["venue"]["id"] in self.conference_ids:
+                        if self.conference_ids is None or parsed_line["venue"]["id"] in self.conference_ids:
                             # If doesn't have year in the dictionary
-                            if parsed_paper["year"] not in conference_papers:
-                                conference_papers[parsed_paper["year"]] = []
+                            if parsed_line["year"] not in conference_papers:
+                                conference_papers[parsed_line["year"]] = []
 
-                            conference_papers[parsed_paper["year"]].append(GenerateGraph.get_data(parsed_paper))
+                            conference_papers[parsed_line["year"]].append(GenerateGraph.get_data(parsed_line))
 
                     except KeyError as e:
                         pass
