@@ -1,3 +1,4 @@
+RED='\033[0;31m'
 GREEN='\033[0;32m'
 RESET='\033[0m'
 
@@ -16,14 +17,13 @@ echo "${GREEN}Converting downloaded XML to JSON...${RESET}"
 python3 scripts/xml2json.py "${TMP_FOLDER}/dblp.xml.gz" "${TMP_FOLDER}/dblp.json"
 mv "${TMP_FOLDER}/dblp.json" ./dblp.json
 
-if [[ $- == *i* ]]
+if [[ $- == *i* ]]; then
     while true; do
-    read -p "Do you wish to remove the tmp folder (${TMP_FOLDER})?" yn
-    case $yn in
-        [Yy]* ) rm -r $TMP_FOLDER; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+        read -q "yn?Do you wish to remove the tmp folder (${TMP_FOLDER})? [y/n] ";
+        case $yn in
+            [Yy]* ) rm -r $TMP_FOLDER; break;;
+            [Nn]* ) break;;
+            * ) echo "${RED}Please answer yes or no.${RESET}";;
+        esac;
+    done;
 fi
-
