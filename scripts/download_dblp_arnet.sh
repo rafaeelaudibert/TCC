@@ -1,3 +1,5 @@
+set -e
+
 GREEN='\033[0;32m'
 RESET='\033[0m'
 
@@ -17,14 +19,5 @@ dtrx "${TMP_FOLDER}/dblp.${DPLP_VERSION}.7z" --one rename
 echo "${GREEN}Renaming file...${RESET}"
 mv "./dblp.${DPLP_VERSION}" "./dblp_arnet.${DPLP_VERSION}.json"
 
-if [[ $- == *i* ]]
-    while true; do
-        read -p "Do you wish to remove the tmp folder (${TMP_FOLDER})?" yn
-        case $yn in
-            [Yy]* ) rm -r $TMP_FOLDER; break;;
-            [Nn]* ) break;;
-            * ) echo "Please answer yes or no.";;
-        esac;
-    done
-fi
-
+echo "${GREEN}Parsing file to a real JSON file..."
+sed -i.bak -E 's/NumberInt\(([0-9]+)\)/"\1"/g' "dblp_arnet.${DBLP_VERSION}.json"
