@@ -1,34 +1,61 @@
 # Imports
 import json
-from typing import List
+from typing import TypeVar, List
 
 import fire
 import networkx as nx
+import json_stream
+from json_stream.dump import JSONStreamEncoder
 from tqdm import tqdm, trange
 
 from parallel_betweenness import betweenness_centrality_parallel
 from parallel_closeness import closeness_centrality_parallel
 
+# Helper function
+T = TypeVar("T")
+
+
+def map_lower(*input_list: List[T]) -> List[T]:
+    return [entry.lower() for entry in input_list]
+
+
 # Generic constants
 CONFERENCE_IDS = {
     "all": None,
-    "AAAI-NIPS-IJCAI": ["1184914352", "1127325140", "1203999783"],
+    "AAAI-NIPS-IJCAI": map_lower("AAAI", "NIPS", "NeurIPS", "IJCAI"),
     # AAAI, NIPS, IJCAI, CVPR, ECCV, ICCV, ICML, KDD, ACL, EMNLP, NAACL, SIGIR, WWW
-    "CsRankings-IA": [
-        "1184914352",
-        "1127325140",
-        "1203999783",
-        "1158167855",
-        "1124077590",
-        "1164975091",
-        "1180662882",
-        "1130985203",
-        "1188739475",
-        "1192655580",
-        "1173951661",
-        "1140684652",
-        "1135342153",
-    ],
+    "CsRankings-IA": map_lower(
+        "AAAI",
+        "NIPS",
+        "NeurIPS",
+        "IJCAI",
+        "CVPR",
+        "ECCV",
+        "ECCV (2)",
+        "ECCV (3)",
+        "ECCV (4)",
+        "ECCV (5)",
+        "ECCV (6)",
+        "ECCV (7)",
+        "ICCV",
+        "ICCVG",
+        "international conference on computer vision",  # Weird, I know, but what am I gonna do
+        "ICML",  # International Conference on Machine Learning
+        "ICMLC",  # International Conference on Machine Learning and Cybernetics
+        "ICMLA",  # International Conference on Machine Learning and Applications
+        "ICMLA (1)",  # International Conference on Machine Learning and Applications
+        "ICMLA (2)",  # International Conference on Machine Learning and Applications
+        "KDD",
+        "knowledge discovery and data mining",
+        "ACL",
+        "EMNLP",
+        "EMNLP-CoNLL",
+        "Empirical Methods in Natural Language Processing",
+        "NAACL",
+        "HLT-NAACL",
+        "SIGIR",
+        "WWW",
+    ),
 }
 
 VERSION = "v13"
@@ -37,7 +64,7 @@ VERSION = "v13"
 class GenerateGraph:
     DATASET_SIZE = 5_354_309
     GML_BASE_PATH = "../GML/"
-    DBLP_FILENAME = f"dblp_papers_{VERSION}.txt"
+    DBLP_FILENAME = f"../dblp_arnet.{VERSION}.json"
 
     def __init__(
         self,
@@ -63,12 +90,16 @@ class GenerateGraph:
     @staticmethod
     def get_data(dictionary: dict = {}) -> dict:
         """Given a dictionary, parse the necessary data contained in it"""
+        # We need this because we are streaming the input
+        dictified_dict = dict(dictionary)
+
         return {
-            "id": dictionary.get("id", 0),
-            "title": dictionary.get("title", ""),
-            "year": int(dictionary.get("year", 0)),
-            "authors": dictionary.get("authors", []),
-            "references": dictionary.get("references", []),
+            "id": dictified_dict.get("_id", dictified_dict.get("id", 0)),
+            "title": dictified_dict.get("title", ""),
+            "venue": dictified_dict.get("venue", None),
+            "year": int(dictified_dict.get("year", 0)),
+            "authors": list(map(dict, list(dictified_dict.get("authors", [])))),
+            "references": list(dictified_dict.get("references", [])),
         }
 
     def print_graph_info(self) -> None:
@@ -113,33 +144,41 @@ class GenerateGraph:
         conference_papers = {}
 
         if read_saved_from_dblp:
-            json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
+            json_filename = "../{}_{}.json".format(self.conference_name, self.graph_name)
             with open(json_filename, "r") as f:
                 conference_papers = json.load(f)
         else:
-            with open("../dblp_arnet/{}".format(self.DBLP_FILENAME), "r") as f:
-                for line in tqdm(f, total=self.DATASET_SIZE):
-                    parsed_line = json.loads(line)
+            with open(self.DBLP_FILENAME, "r") as f:
+                progress = tqdm(total=self.DATASET_SIZE, desc="Total")
+                error_progress = tqdm(desc="Errors")
+                success_progress = tqdm(desc="Success")
+                for line in json_stream.load(f).persistent():
                     try:
-                        if self.conference_ids is None or parsed_line["venue"]["id"] in self.conference_ids:
+                        if self.conference_ids is None or (
+                            line["venue"]["raw"] is not None and line["venue"]["raw"].lower() in self.conference_ids
+                        ):
                             # If doesn't have year in the dictionary
-                            if parsed_line["year"] not in conference_papers:
-                                conference_papers[parsed_line["year"]] = []
+                            if line["year"] not in conference_papers:
+                                conference_papers[line["year"]] = []
 
-                            conference_papers[parsed_line["year"]].append(GenerateGraph.get_data(parsed_line))
-
+                            conference_papers[line["year"]].append(GenerateGraph.get_data(line))
+                            success_progress.update(1)
                     except KeyError as e:
+                        error_progress.update(1)
                         pass
+                    finally:
+                        progress.update(1)
 
         if save_from_dblp:
-            json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
-            with open(json_filename, "w") as f:
-                json.dump(conference_papers, f, indent=4)
+            json_filename = "../data/dblp_arnet_{}_{}.json".format(self.conference_name, self.graph_name)
+            with JSONStreamEncoder():
+                with open(json_filename, "w") as f:
+                    json.dump(conference_papers, f, indent=4)
 
         return conference_papers
 
     def read_from_json(self) -> dict:
-        json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
+        json_filename = "../data/dblp_arnet_{}_{}.json".format(self.conference_name, self.graph_name)
         with open(json_filename, "r") as f:
             conference_papers = json.load(f)
 
@@ -246,6 +285,7 @@ def generate_graph(
     """
     Run the required authors generation
     """
+
     if run_authors_and_papers_graph:
         from generate_authors_and_papers_graph import AuthorPaperGraph
 
