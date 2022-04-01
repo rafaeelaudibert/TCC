@@ -31,13 +31,13 @@ CONFERENCE_IDS = {
     ],
 }
 
-VERSION = "v13"
+VERSION = "v11"
 
 
 class GenerateGraph:
-    DATASET_SIZE = 5_354_309
+    DATASET_SIZE = 4_107_340
     GML_BASE_PATH = "../GML/"
-    DBLP_FILENAME = f"dblp_papers_{VERSION}.txt"
+    DBLP_FILENAME = f"../dblp_arnet.{VERSION}.json"
 
     def __init__(
         self,
@@ -45,14 +45,13 @@ class GenerateGraph:
         conference_name: str = "",
         conference_ids: List[int] = None,
         min_year: int = 1890,
-        max_year: int = 2021,
+        max_year: int = 2018,
     ):
-
         self.graph_name = graph_name
         self.conference_name = conference_name
         self.conference_ids = conference_ids
         self.min_year = min_year
-        self.max_year = max_year
+        self.max_year = max_year + 1
 
         self.G = nx.Graph()  # placeholder
         self.yearly_G = nx.Graph()  # placeholder
@@ -66,6 +65,7 @@ class GenerateGraph:
         return {
             "id": dictionary.get("id", 0),
             "title": dictionary.get("title", ""),
+            "venue": dictionary.get("venue", None),
             "year": int(dictionary.get("year", 0)),
             "authors": dictionary.get("authors", []),
             "references": dictionary.get("references", []),
@@ -113,11 +113,11 @@ class GenerateGraph:
         conference_papers = {}
 
         if read_saved_from_dblp:
-            json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
+            json_filename = "../{}_{}.json".format(self.conference_name, self.graph_name)
             with open(json_filename, "r") as f:
                 conference_papers = json.load(f)
         else:
-            with open("../dblp_arnet/{}".format(self.DBLP_FILENAME), "r") as f:
+            with open(self.DBLP_FILENAME, "r") as f:
                 for line in tqdm(f, total=self.DATASET_SIZE):
                     parsed_line = json.loads(line)
                     try:
@@ -132,14 +132,14 @@ class GenerateGraph:
                         pass
 
         if save_from_dblp:
-            json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
+            json_filename = "../data/{}_{}_{}.json".format(self.conference_name, self.graph_name, VERSION)
             with open(json_filename, "w") as f:
                 json.dump(conference_papers, f, indent=4)
 
         return conference_papers
 
     def read_from_json(self) -> dict:
-        json_filename = "../dblp_arnet/{}_{}.json".format(self.conference_name, self.graph_name)
+        json_filename = "../data/{}_{}_{}.json".format(self.conference_name, self.graph_name, VERSION)
         with open(json_filename, "r") as f:
             conference_papers = json.load(f)
 

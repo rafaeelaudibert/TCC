@@ -1,4 +1,7 @@
 # Main class import
+from collections import defaultdict
+
+from tqdm import tqdm, trange
 from generate_graph import GenerateGraph
 
 # Core imports
@@ -20,15 +23,32 @@ COUNTRY_REPLACEMENT = {}
 
 def infer_country_from(organization: str):
     # Parse last name
-    country = organization.split(", ")[-1][:-5].replace(".", "").lower()
+    country = organization.split(", ")[-1].replace(".", "").lower()
 
-    # Check for tab at the end
-    country = country if "#TAB#" in organization else None
+    # Remove those pesky tabs
+    country = country.replace("#TAB#", "")
+    country = country.replace("#tab#", "")
+
+    # Remove useless characters
+    for old, new in [("(", ""), (")", ""), ("[", ""), ("]", ""), ("-", " "), ("_", " ")]:
+        country = country.replace(old, new)
 
     # Make country replacement
-    country = country if country not in COUNTRY_REPLACEMENT.keys() else COUNTRY_REPLACEMENT[country]
+    if country in COUNTRY_REPLACEMENT.keys():
+        return (True, COUNTRY_REPLACEMENT[country])
 
-    return country
+    # Only last name
+    last_name = country.split(" ")[-1]
+    if last_name in COUNTRY_REPLACEMENT.keys():
+        return (True, COUNTRY_REPLACEMENT[last_name])
+
+    # Only first name
+    first_name = country.split(" ")[0]
+    if first_name in COUNTRY_REPLACEMENT.keys():
+        return (True, COUNTRY_REPLACEMENT[first_name])
+
+    print(first_name, last_name, country)
+    return (False, country)
 
 
 class CountryCitationGraph(GenerateGraph):
@@ -45,17 +65,18 @@ class CountryCitationGraph(GenerateGraph):
 
     def generate(
         self,
-        save_gpickle: bool = True,
+        save_gpickle: bool = False,
         save_yearly_gpickle: bool = False,
+        generate_missing_countries: bool = False,
         save_non_cummulated_yearly_gpickle: bool = False,
-        read_from_dblp: bool = True,
+        read_from_dblp: bool = False,
         save_from_dblp: bool = False,
         read_saved_from_dblp: bool = False,
-        generate_graph: bool = True,
-        compute_degree: bool = True,
-        compute_closeness: bool = True,
-        compute_betweenness: bool = True,
-        compute_pagerank: bool = True,
+        generate_graph: bool = False,
+        compute_degree: bool = False,
+        compute_closeness: bool = False,
+        compute_betweenness: bool = False,
+        compute_pagerank: bool = False,
     ) -> None:
         """Function to generate the recommender systems graph
 
@@ -92,14 +113,36 @@ class CountryCitationGraph(GenerateGraph):
         # Store older_papers in an arrray
         older_papers = {}
 
+        # Store missing countries
+        missing_set = set()
+
+        # Store papers count per conference
+        papers_count = defaultdict(lambda: 0)
+
+        # Store papers count per year
+        papers_year_count = defaultdict(lambda: 0)
+
         # Iterate through all the dataset years
-        for year in range(self.min_year, self.max_year):
+        for year in trange(self.min_year, self.max_year):
 
             # Reset yearly graph
             if save_non_cummulated_yearly_gpickle:
                 self.yearly_G = nx.DiGraph()
 
-            if generate_graph and read_from_dblp:
+            if generate_missing_countries:
+                print(f"Generating missing countries for year {str(year)}")
+
+                for paper in tqdm(conference_papers.get(str(year), [])):
+                    for author in paper["authors"]:
+                        for org in [author.get("org", ""), *author.get("orgs", [])]:
+                            found, country = infer_country_from(org)
+                            if not found and country not in missing_set:
+                                missing_set.add(country)
+
+                    papers_count[paper["venue"]["raw"]] += 1
+                    papers_year_count[year] += 1
+
+            elif generate_graph and read_from_dblp:
                 print(f"Parsing year {str(year)}")
 
                 # Add papers and authors to be referenced later
@@ -160,6 +203,14 @@ class CountryCitationGraph(GenerateGraph):
                     )
 
                     super().save_yearly_gpickle(year, G=self.yearly_G, graph_name="yearly_" + self.graph_name)
+
+        with open("../data/missing_countries.json", "w") as f:
+            json.dump({country: "" for country in missing_set}, f)
+
+        count = sum(len(value) for value in conference_papers.values())
+        print("Papers count per conference", papers_count)
+        print("Papers count per year", papers_year_count)
+        print("Total papers count: ", count)
 
         if generate_graph and read_from_dblp:
             print("Finished creating the graph")
