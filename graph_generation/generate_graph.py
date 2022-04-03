@@ -36,7 +36,7 @@ VERSION = "v11"
 
 class GenerateGraph:
     DATASET_SIZE = 4_107_340
-    GML_BASE_PATH = "../GML/"
+    GPICKLE_BASE_PATH = "../gpickle/"
     DBLP_FILENAME = f"../dblp_arnet.{VERSION}.json"
 
     def __init__(
@@ -71,8 +71,11 @@ class GenerateGraph:
             "references": dictionary.get("references", []),
         }
 
-    def print_graph_info(self) -> None:
-        print(f"Graph size: {self.G.number_of_nodes()} nodes and {self.G.number_of_edges()} edges")
+    def print_graph_info(self, graph=None) -> None:
+        if graph is None:
+            graph = self.G
+
+        print(f"Graph size: {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges")
 
     def save_gpickle(self, G: nx.Graph = None, graph_name: str = None, conference_name: str = None) -> None:
         """Save a Graph G to a file in the `.gpickle` format"""
@@ -82,7 +85,7 @@ class GenerateGraph:
         graph_name = graph_name or self.graph_name
         conference_name = conference_name or self.conference_name
 
-        gpickle_filename = self.GML_BASE_PATH + "{}_{}_graph.gpickle".format(graph_name, conference_name)
+        gpickle_filename = self.GPICKLE_BASE_PATH + "{}_{}_graph.gpickle".format(graph_name, conference_name)
         nx.write_gpickle(G, gpickle_filename)
 
         print(f"Saved graph to {gpickle_filename} file")
@@ -100,7 +103,7 @@ class GenerateGraph:
         graph_name = graph_name or self.graph_name
         conference_name = conference_name or self.conference_name
 
-        gpickle_filename = self.GML_BASE_PATH + "{}_{}_{}_graph.gpickle".format(graph_name, conference_name, year)
+        gpickle_filename = self.GPICKLE_BASE_PATH + "{}_{}_{}_graph.gpickle".format(graph_name, conference_name, year)
         nx.write_gpickle(G, gpickle_filename)
 
         print(f"Saved graph to {gpickle_filename} file")
@@ -146,7 +149,7 @@ class GenerateGraph:
         return conference_papers
 
     def read_from_gpickle(self, year: int) -> nx.DiGraph():
-        gpickle_filename = self.GML_BASE_PATH + "{}_{}_{}_graph.gpickle".format(
+        gpickle_filename = self.GPICKLE_BASE_PATH + "{}_{}_{}_graph.gpickle".format(
             self.conference_name, year, self.graph_name
         )
         print(f"Reading graph from GML file {gpickle_filename}")
