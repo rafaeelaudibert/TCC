@@ -18,6 +18,7 @@ GML-old/
 *.csv
 dblp_tmp/
 dblp_arnet_tmp/
+images/*.png
 
 
 !country_replacement.json
