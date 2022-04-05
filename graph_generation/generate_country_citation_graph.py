@@ -43,7 +43,7 @@ COUNTRY_REPLACEMENT = {}
 
 def infer_country_from(organizations: List[str]):
     for organization in organizations:
-        # Parse last name
+        # Parse last name after all commas
         country = organization.split(", ")[-1].replace(".", "").lower()
 
         # Remove those pesky tabs
@@ -58,17 +58,11 @@ def infer_country_from(organizations: List[str]):
         if country in COUNTRY_REPLACEMENT.keys():
             return (True, COUNTRY_REPLACEMENT[country])
 
-        # Only last name
-        last_name = country.split(" ")[-1]
-        if last_name in COUNTRY_REPLACEMENT.keys():
-            return (True, COUNTRY_REPLACEMENT[last_name])
+        # Make org replacement
+        if organization in COUNTRY_REPLACEMENT.keys():
+            return (True, COUNTRY_REPLACEMENT[organization])
 
-        # Only first name
-        first_name = country.split(" ")[0]
-        if first_name in COUNTRY_REPLACEMENT.keys():
-            return (True, COUNTRY_REPLACEMENT[first_name])
-
-    return (False, country)
+    return (False, organization)
 
 
 class CountryCitationGraph(GenerateGraph):
@@ -281,7 +275,7 @@ class CountryCitationGraph(GenerateGraph):
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
             top_countries_labels = [
-                label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1]) if label is not None
+                label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1])  # if label is not None
             ][:15]
             values = np.array(
                 [
