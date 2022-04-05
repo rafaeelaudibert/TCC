@@ -21,6 +21,13 @@ import seaborn as sns
 ## COMMAND USED TO RUN KINDA EVERYTHING
 # python3 graph_generation/generate_graph.py --run-country-citation-graph --conference_name="AAAI-NIPS-IJCAI" --generate-graph --save-non-cummulated-yearly-gpickle --save-yearly-gpickle --save-non-cummulated-yearly-gpickle --save-gpickle
 
+SOUTH_AMERICA_COUNTRIES = [
+    "Brazil",
+    "Colombia",
+    "Argentina",
+    "Chile",
+    "Venezuela",
+]
 
 # Global graph configurations
 sns.set_style("white")
@@ -274,6 +281,8 @@ class CountryCitationGraph(GenerateGraph):
 
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
+
+            # top_countries_labels = SOUTH_AMERICA_COUNTRIES
             top_countries_labels = [
                 label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1])  # if label is not None
             ][:15]
