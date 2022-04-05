@@ -29,6 +29,9 @@ SOUTH_AMERICA_COUNTRIES = [
     "Venezuela",
 ]
 
+TOP_COUNTRIES = ["USA", "China"]
+PORTUGUESE_SPEAKING_COUNTRIES = ["Brazil", "Portugal"]
+
 # Global graph configurations
 sns.set_style("white")
 plt.rc("axes", titlesize=18)  # fontsize of the axes title
@@ -282,10 +285,10 @@ class CountryCitationGraph(GenerateGraph):
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
 
-            # top_countries_labels = SOUTH_AMERICA_COUNTRIES
-            top_countries_labels = [
-                label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1])  # if label is not None
-            ][:15]
+            top_countries_labels = PORTUGUESE_SPEAKING_COUNTRIES
+            # top_countries_labels = [
+            #     label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1])  # if label is not None
+            # ][:15]
             values = np.array(
                 [
                     [
@@ -297,12 +300,12 @@ class CountryCitationGraph(GenerateGraph):
             )
             percent = values / values.sum(axis=0).astype(float) * 100
 
-            fig = plt.figure(figsize=(15, 15), tight_layout=True)
+            fig = plt.figure(figsize=(10, 6), tight_layout=True)
             ax = fig.add_subplot(111)
 
             ax.stackplot(years, percent, colors=colors, labels=top_countries_labels)
             ax.set_xticks(range(1970, 2015 + 1, 5))
-            ax.set_title("Stacked percentage per country per year")
+            ax.set_title("Stacked percentage per country per year (Brazil x Portugal)")
             ax.set_ylabel("Percent (%)")
             ax.margins(0, 0)  # Set margins to avoid "whitespace"
 
