@@ -195,8 +195,8 @@ class CountryCitationGraph(GenerateGraph):
                 for paper in tqdm(year_papers, desc="Conference Papers"):
                     # Adiciona/atualiza nodos dos países
                     for author in paper["authors"]:
-                        country = infer_country_from([author.get("org", ""), *author.get("orgs", [])])
-                        if country is not None:
+                        found, country = infer_country_from([author.get("org", ""), *author.get("orgs", [])])
+                        if found:
                             self.G.add_node(country)
 
                             if save_non_cummulated_yearly_gpickle:
@@ -207,23 +207,23 @@ class CountryCitationGraph(GenerateGraph):
                         # Other paper authors
                         if citation_id in older_papers:
                             for other_author in older_papers[citation_id]:
-                                other_country = infer_country_from(
+                                found_other_country, other_country = infer_country_from(
                                     [other_author.get("org", ""), *other_author.get("orgs", [])]
                                 )
-                                for author in paper["authors"]:
-                                    # Fetch countries
-                                    country = infer_country_from([author.get("org", ""), *author.get("orgs", [])])
 
-                                    # Add edge
-                                    if country is not None and other_country is not None:
-                                        self.G.add_edge(country, other_country)
+                                if found_other_country:
+                                    for author in paper["authors"]:
+                                        # Fetch countries
+                                        found_country, country = infer_country_from(
+                                            [author.get("org", ""), *author.get("orgs", [])]
+                                        )
 
-                                        if save_non_cummulated_yearly_gpickle:
-                                            import pdb
+                                        # Add edge
+                                        if found_country:
+                                            self.G.add_edge(country, other_country)
 
-                                            pdb.set_trace()
-
-                                            self.yearly_G.add_edge(country, other_country)
+                                            if save_non_cummulated_yearly_gpickle:
+                                                self.yearly_G.add_edge(country, other_country)
 
                 self.print_graph_info()
             # else:
