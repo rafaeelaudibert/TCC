@@ -5,6 +5,8 @@ import itertools
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from math import ceil
+
 
 def _chunks(nodes, n_chunks):
     """Divide a list of nodes `l` in `n` chunks"""
@@ -29,8 +31,9 @@ def betweenness_centrality_parallel(G, processes=None, **kwargs):
     """Parallel betweenness centrality  function"""
     pool = Pool(processes=processes)
     node_divisor = len(pool._pool) * 4
-    node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
+    node_chunks = list(_chunks(G.nodes(), ceil(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
+
     print("Generating betweenness in {} chunks in {} cores".format(num_chunks, len(pool._pool)))
     betweenness_scores = pool.map(_betmap, zip([G] * num_chunks, [True] * num_chunks, [None] * num_chunks, node_chunks))
 

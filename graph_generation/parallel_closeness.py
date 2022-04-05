@@ -6,7 +6,7 @@ import functools
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pprint import pprint as pp
+from math import ceil
 
 
 def _chunks(nodes, n_chunks):
@@ -34,7 +34,7 @@ def closeness_centrality_parallel(G, processes=None, **kwargs):
     """Parallel closeness centrality function"""
     pool = Pool(processes=processes)
     node_divisor = len(pool._pool) * 4
-    node_chunks = list(_chunks(G.nodes(), int(G.order() / node_divisor)))
+    node_chunks = list(_chunks(G.nodes(), ceil(G.order() / node_divisor)))
     num_chunks = len(node_chunks)
     print("Generating closeness in {} chunks in {} cores".format(num_chunks, len(pool._pool)))
     graphs = [G] * num_chunks
