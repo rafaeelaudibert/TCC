@@ -2,6 +2,7 @@
 from collections import Counter, defaultdict
 from typing import List
 import numpy as np
+import smoothfit
 
 from tqdm import tqdm, trange
 from generate_graph import GenerateGraph
@@ -248,8 +249,6 @@ class CountryCitationGraph(GenerateGraph):
 
                     super().save_yearly_gpickle(year, G=self.yearly_G, graph_name="yearly_" + self.graph_name)
 
-        print(papers_per_year_per_country.values())
-
         # Just use the COUNTRY_REPLACEMENT array to generate a quick chart
         if generate_institutions_countries_count_chart:
             values = [
@@ -261,7 +260,6 @@ class CountryCitationGraph(GenerateGraph):
 
             most_common = counter.most_common()
             labels, values = [key for key, val in most_common], [val for key, val in most_common]
-            print(labels)
 
             # First figure is a bar chart with how many institutions every used country has
             plt.xticks(rotation="vertical")
@@ -278,7 +276,7 @@ class CountryCitationGraph(GenerateGraph):
 
             # Second figure is a stacked country chart showing how many publications
             # per country we have every year
-            years = list(papers_per_year_per_country.keys())
+            years = np.array(list(papers_per_year_per_country.keys()))
 
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
@@ -313,6 +311,25 @@ class CountryCitationGraph(GenerateGraph):
             ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5)
 
             fig.savefig("countries_stacked.png")
+
+            # Third figure is the count of different countries per year
+            plt.xticks(rotation="vertical")
+            fig = plt.figure(figsize=(10, 10), tight_layout=True)
+            ax = fig.add_subplot(111)
+
+            data = np.array([len(papers_per_year_per_country[year]) for year in years])
+            ax.plot(years, data)
+
+            basis, coeffs = smoothfit.fit1d(years, data, years.min(), years.max(), 5, degree=1, lmbda=1.0e-6)
+            ax.plot(basis.mesh.p[0], coeffs[basis.nodal_dofs[0]], "-")
+
+            ax.set_yticks(range(data.min(), data.max() + 1))
+            ax.grid(axis="x", color="0.95")
+            ax.grid(axis="y", color="0.9")
+
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Countries Count")
+            fig.savefig("country_per_year_line.png")
 
         if generate_missing_countries:
             with open("../data/missing_countries.json", "w") as f:
