@@ -29,6 +29,44 @@ SOUTH_AMERICA_COUNTRIES = [
     "Venezuela",
 ]
 
+EUROPEAN_COUNTRIES = [
+    "France",
+    "Germany",
+    "United Kingdom",
+    "Italy",
+    "Spain",
+    "Switzerland",
+    "Netherlands",
+    "Austria",
+    "Sweden",
+    "Ireland",
+    "Portugal",
+    "Belgium",
+    "Finland",
+    "Denmark",
+    "Russia",
+    "Poland",
+    "Greece",
+    "Czech Republic",
+    "Hungary",
+    "Norway",
+    "Luxembourg",
+    "Romania",
+    "Slovenia",
+    "Iceland",
+    "Latvia",
+    "Armenia",
+    "Bulgaria",
+    "Estonia",
+    "Macedonia",
+    "Serbia",
+    "Croatia",
+    "Lithuania",
+    "Malta",
+    "Moldova",
+    "Slovakia",
+]
+
 TOP_COUNTRIES = ["USA", "China"]
 PORTUGUESE_SPEAKING_COUNTRIES = ["Brazil", "Portugal"]
 
