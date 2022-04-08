@@ -303,11 +303,17 @@ class CountryCitationGraph(GenerateGraph):
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
 
-            # top_countries_labels = PORTUGUESE_SPEAKING_COUNTRIES
+            # top_countries_labels = EUROPEAN_COUNTRIES
             top_countries_labels = [
-                label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1]) if label is not None
+                label
+                for label, _value in sorted(
+                    {(key, value) for key, value in last_year_papers.items()},  # if key in SOUTH_AMERICA_COUNTRIES},
+                    key=lambda x: -x[1],
+                )
+                if label is not None
             ][:15]
-            # top_countries_labels = [None, *top_countries_labels]
+            top_countries_labels = [None, *top_countries_labels]  # Include the ones we couldn't track
+
             values = np.array(
                 [
                     [
@@ -317,10 +323,30 @@ class CountryCitationGraph(GenerateGraph):
                     for country in top_countries_labels
                 ]
             )
-            percent = values / values.sum(axis=0).astype(float) * 100
 
-            fig = plt.figure(figsize=(10, 6), tight_layout=True)
-            ax = fig.add_subplot(111)
+            # These are an average between 2 closer values
+            windowed_values = np.array(
+                [
+                    [
+                        (
+                            year_values.get(country if country != "None" else "-", 0)
+                            + prev_year_values.get(country if country != "None" else "-", 0)
+                        )
+                        / 2
+                        for year_values, prev_year_values in zip(
+                            list(papers_per_year_per_country.values())[1:], papers_per_year_per_country.values()
+                        )
+                    ]
+                    for country in top_countries_labels
+                ]
+            )
+
+            percent = values / values.sum(axis=0).astype(float) * 100
+            windowed_percent = windowed_values / windowed_values.sum(axis=0).astype(float) * 100
+
+            fig = plt.figure(figsize=(12, 16), tight_layout=True)
+            ax = fig.add_subplot(211)
+            bx = fig.add_subplot(212)
 
             ax.stackplot(years, percent, colors=colors, labels=top_countries_labels)
             ax.set_xticks(range(1970, 2015 + 1, 5))
@@ -328,12 +354,14 @@ class CountryCitationGraph(GenerateGraph):
             ax.set_ylabel("Percent (%)")
             ax.margins(0, 0)  # Set margins to avoid "whitespace"
 
-            # Shrink current axis's on the bottom
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0 + box.height * 0.001, box.width, box.height * 0.999])
+            bx.stackplot(years[1:], windowed_percent, colors=colors, labels=top_countries_labels)
+            bx.set_xticks(range(1970, 2015 + 1, 5))
+            bx.set_title("Averaged stacked percentage per country per year")
+            bx.set_ylabel("Percent (%)")
+            bx.margins(0, 0)  # Set margins to avoid "whitespace"
 
-            # Put a legend below current axis
-            ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5)
+            # Put a legend below current B axis
+            bx.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5)
 
             fig.savefig("countries_stacked.png")
 
