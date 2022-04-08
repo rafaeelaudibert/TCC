@@ -50,8 +50,15 @@ GRAPH_TYPE = "countries_citation"
 
 COUNTRY_REPLACEMENT = {}
 
+# Globally store the most recent author's country, to use it when we can't detect a country for a future paper
+# from that author
+author_country_dict = {}
+author_country_dict_usage = 0
 
-def infer_country_from(organizations: List[str]):
+
+def infer_country_from(organizations: List[str], author_id: str):
+    global author_country_dict, author_country_dict_usage, COUNTRY_REPLACEMENT
+
     for organization in organizations:
         # Parse last name after all commas
         country = organization.split(", ")[-1].replace(".", "").lower()
@@ -66,11 +73,18 @@ def infer_country_from(organizations: List[str]):
 
         # Make country replacement
         if country in COUNTRY_REPLACEMENT.keys():
+            author_country_dict[author_id] = COUNTRY_REPLACEMENT[country]
             return (True, COUNTRY_REPLACEMENT[country])
 
         # Make org replacement
         if organization in COUNTRY_REPLACEMENT.keys():
+            author_country_dict[author_id] = COUNTRY_REPLACEMENT[organization]
             return (True, COUNTRY_REPLACEMENT[organization])
+
+    # As a last resort, try using the country this user had before
+    if author_id in author_country_dict.keys():
+        author_country_dict_usage += 1  # For statistics purposes
+        return (True, author_country_dict[author_id])
 
     return (False, organization)
 
@@ -142,7 +156,7 @@ class CountryCitationGraph(GenerateGraph):
         older_papers = {}
 
         # Store missing countries
-        missing_set = set()
+        missing_set = {}
 
         # Used countries
         used_countries_set = set()
@@ -171,13 +185,13 @@ class CountryCitationGraph(GenerateGraph):
                 for author in paper["authors"]:
                     author_country = None
                     for org in [author.get("org", ""), *author.get("orgs", [])]:
-                        found, country = infer_country_from([org])
+                        found, country = infer_country_from([org], author["id"])
 
                         if found and author_country is None:
                             author_country = country
 
-                        if not found and country not in missing_set:
-                            missing_set.add(country)
+                        if not found and country not in missing_set.keys():
+                            missing_set[country] = author
                         else:
                             used_countries_set.add(country)
 
@@ -195,7 +209,9 @@ class CountryCitationGraph(GenerateGraph):
                 for paper in tqdm(year_papers, desc="Conference Papers"):
                     # Adiciona/atualiza nodos dos países
                     for author in paper["authors"]:
-                        found, country = infer_country_from([author.get("org", ""), *author.get("orgs", [])])
+                        found, country = infer_country_from(
+                            [author.get("org", ""), *author.get("orgs", [])], author["id"]
+                        )
                         if found:
                             self.G.add_node(country)
 
@@ -208,14 +224,14 @@ class CountryCitationGraph(GenerateGraph):
                         if citation_id in older_papers:
                             for other_author in older_papers[citation_id]:
                                 found_other_country, other_country = infer_country_from(
-                                    [other_author.get("org", ""), *other_author.get("orgs", [])]
+                                    [other_author.get("org", ""), *other_author.get("orgs", [])], other_author["id"]
                                 )
 
                                 if found_other_country:
                                     for author in paper["authors"]:
                                         # Fetch countries
                                         found_country, country = infer_country_from(
-                                            [author.get("org", ""), *author.get("orgs", [])]
+                                            [author.get("org", ""), *author.get("orgs", [])], author["id"]
                                         )
 
                                         # Add edge
@@ -253,6 +269,8 @@ class CountryCitationGraph(GenerateGraph):
 
                     super().save_yearly_gpickle(year, G=self.yearly_G, graph_name="yearly_" + self.graph_name)
 
+        print("Usage of the author_country_dict method:", author_country_dict_usage)
+
         # Just use the COUNTRY_REPLACEMENT array to generate a quick chart
         if generate_institutions_countries_count_chart:
             values = [
@@ -285,10 +303,11 @@ class CountryCitationGraph(GenerateGraph):
             last_year = years[-1]
             last_year_papers = papers_per_year_per_country[last_year]
 
-            top_countries_labels = PORTUGUESE_SPEAKING_COUNTRIES
-            # top_countries_labels = [
-            #     label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1])  # if label is not None
-            # ][:15]
+            # top_countries_labels = PORTUGUESE_SPEAKING_COUNTRIES
+            top_countries_labels = [
+                label for label, _value in sorted(last_year_papers.items(), key=lambda x: -x[1]) if label is not None
+            ][:15]
+            # top_countries_labels = [None, *top_countries_labels]
             values = np.array(
                 [
                     [
@@ -305,7 +324,7 @@ class CountryCitationGraph(GenerateGraph):
 
             ax.stackplot(years, percent, colors=colors, labels=top_countries_labels)
             ax.set_xticks(range(1970, 2015 + 1, 5))
-            ax.set_title("Stacked percentage per country per year (Brazil x Portugal)")
+            ax.set_title("Stacked percentage per country per year")
             ax.set_ylabel("Percent (%)")
             ax.margins(0, 0)  # Set margins to avoid "whitespace"
 
@@ -339,7 +358,7 @@ class CountryCitationGraph(GenerateGraph):
 
         if generate_missing_countries:
             with open("../data/missing_countries.json", "w") as f:
-                json.dump({country: "" for country in missing_set}, f)
+                json.dump({country: author for country, author in missing_set.items()}, f)
 
         if generate_graph:
             tqdm.write("Finished creating the graph")
