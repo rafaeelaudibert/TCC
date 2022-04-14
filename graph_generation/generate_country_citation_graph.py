@@ -87,6 +87,7 @@ CONFERENCE_NAME = "AAAI-NIPS-IJCAI"
 GRAPH_TYPE = "countries_citation"
 
 COUNTRY_REPLACEMENT = {}
+AUTHOR_COUNTRY_REPLACEMENT = {}
 
 # Globally store the most recent author's country, to use it when we can't detect a country for a future paper
 # from that author
@@ -129,13 +130,16 @@ def infer_country_from(organizations: List[str], author_id: str):
 
 class CountryCitationGraph(GenerateGraph):
     def __init__(self, *args, **kwargs):
-        global COUNTRY_REPLACEMENT
+        global COUNTRY_REPLACEMENT, AUTHOR_COUNTRY_REPLACEMENT
 
         # Configure to current directory
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
         with open("./country_replacement.json", "r") as f:
             COUNTRY_REPLACEMENT = json.load(f)
+
+        with open("./author_country_replacement.yml", "r") as f:
+            AUTHOR_COUNTRY_REPLACEMENT = {str(row["id"]): row["country"] for row in yaml.safe_load(f)}
 
         super().__init__(*args, **kwargs)
 
