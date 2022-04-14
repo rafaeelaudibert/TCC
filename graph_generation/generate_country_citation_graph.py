@@ -115,6 +115,18 @@ def infer_country_from(organizations: List[str], author_id: str):
             author_country_dict[author_id] = COUNTRY_REPLACEMENT[country]
             return (True, COUNTRY_REPLACEMENT[country])
 
+        # Look for last name only
+        last_name = country.split(" ")[-1]
+        if last_name in COUNTRY_REPLACEMENT.keys():
+            author_country_dict[author_id] = COUNTRY_REPLACEMENT[last_name]
+            return (True, COUNTRY_REPLACEMENT[last_name])
+
+        # Look for first name only
+        first_name = country.split(" ")[0]
+        if first_name in COUNTRY_REPLACEMENT.keys():
+            author_country_dict[author_id] = COUNTRY_REPLACEMENT[first_name]
+            return (True, COUNTRY_REPLACEMENT[first_name])
+
         # Make org replacement
         if organization in COUNTRY_REPLACEMENT.keys():
             author_country_dict[author_id] = COUNTRY_REPLACEMENT[organization]
