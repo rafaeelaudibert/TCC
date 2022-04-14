@@ -9,6 +9,7 @@ from generate_graph import GenerateGraph
 
 # Core imports
 import json
+import yaml
 import os
 from pprint import pprint as pp
 
@@ -398,9 +399,10 @@ class CountryCitationGraph(GenerateGraph):
             percent = values / values.sum(axis=0).astype(float) * 100
             windowed_percent = windowed_values / windowed_values.sum(axis=0).astype(float) * 100
 
-            fig = plt.figure(figsize=(12, 16), tight_layout=True)
-            ax = fig.add_subplot(211)
-            bx = fig.add_subplot(212)
+            fig = plt.figure(figsize=(12, 24), tight_layout=True)
+            ax = fig.add_subplot(311)
+            bx = fig.add_subplot(312)
+            cx = fig.add_subplot(313)
 
             ax.stackplot(years, percent, colors=colors, labels=top_countries_labels)
             ax.set_xticks(range(1970, 2015 + 1, 5))
@@ -414,8 +416,14 @@ class CountryCitationGraph(GenerateGraph):
             bx.set_ylabel("Percent (%)")
             bx.margins(0, 0)  # Set margins to avoid "whitespace"
 
-            # Put a legend below current B axis
-            bx.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5)
+            cx.stackplot(years, values, colors=colors, labels=top_countries_labels)
+            cx.set_xticks(range(1970, 2015 + 1, 5))
+            cx.set_title("Stacked absolute value per country per year")
+            cx.set_ylabel("Value")
+            cx.margins(0, 0)  # Set margins to avoid "whitespace"
+
+            # Put a legend below current C axis
+            cx.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5)
 
             fig.savefig("countries_stacked.png")
 
@@ -440,7 +448,7 @@ class CountryCitationGraph(GenerateGraph):
 
         if generate_missing_countries:
             with open("../data/missing_countries.json", "w") as f:
-                json.dump({country: author for country, author in missing_set.items()}, f)
+                json.dump({country: "" for country, _author in missing_set.items()}, f)
 
         if generate_graph:
             tqdm.write("Finished creating the graph")
