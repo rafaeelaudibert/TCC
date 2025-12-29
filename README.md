@@ -2,7 +2,21 @@
 
 This is the companion repository to my graduation thesis titled "The Evolution of AI and Machine Learning: The Analysis of Impact, Leadership and Influence over the Last Decades", advised by Prof. Dr. Anderson Rocha Tavares, and co-advised by Prof. Dr. Luís da Cunha Lamb. This work is going to be presented as partial fullfilment for the Bachelor in Computer Science degree at [INF](https://inf.ufrgs.br)-[UFRGS](https://ufrgs.br).
 
-:construction: This is still work in progress, so don't expect everything to be properly documented and usable. When the thesis is complete and published, I'll be linking it here. Also, the final thesis PDF will be added to this repository when possible.
+The final form of the thesis can be found [here](./output/thesis.pdf). You can also find it online on [LUME](https://lume.ufrgs.br/handle/10183/245533). This thesis was also published on [arXiv](https://arxiv.org/abs/2205.13131) and the Journal of Applied Logics Vol. 10 No. 5 2023
+
+Cite as
+
+```bibtex
+@misc{audibert2024evolutionaimachinelearning,
+      title={On the Evolution of A.I. and Machine Learning: Towards a Meta-level Measuring and Understanding Impact, Influence, and Leadership at Premier A.I. Conferences},
+      author={Rafael B. Audibert and Henrique Lemos and Pedro Avelar and Anderson R. Tavares and Luís C. Lamb},
+      year={2024},
+      eprint={2205.13131},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2205.13131},
+}
+```
 
 ## The dataset
 
@@ -24,3 +38,11 @@ It's not extremely overcomplicated, barely scratching the surface of the underly
 ## Author
 
 :wizard: [Rafa Audibert](https://www.rafaaudibert.dev)
+
+## Acknowledgments
+
+See [ACKNOWLEDGMENTS](./ACKNOWLEDGEMENTS)
+
+## License
+
+MIT
